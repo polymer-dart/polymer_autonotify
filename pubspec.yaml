@@ -2,7 +2,7 @@ name: polymer_autonotify
 version: 0.0.1
 author: Vittorio Ballestra (Drafintech s.r.l.)
 description: auto notify support for Polymer 1.0
-homepage : http://www.drafintech.it
+homepage : https://github.com/dam0vm3nt/polymer_autonotify
 sdk: ">=1.8.0 <2.0.0"
 
 dependencies:
