@@ -1,0 +1,6 @@
+name: polymer_autonotify
+version: 0.0.1
+dependencies:
+ polymer: "^1.0.0"
+
+
