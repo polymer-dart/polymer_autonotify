@@ -188,10 +188,15 @@ class NotifierNodeRoot extends NotifierNode with HasChildrenMixin, HasChildrenRe
     init(_element);
   }
 
-  bool notifyPath(String name, newValue) => _element.notifyPath(name,newValue);
+  bool notifyPath(String name, newValue) {
+    print ("${_element} NOTIFY ${name} with ${newValue}");
+    return _element.notifyPath(name, newValue);
+  }
 
-  notifySplice(List array, String path, int index, int added, List removed) =>
-    _element.jsElement.callMethod('_notifySplice', [jsValue(array),path,index,added, jsValue(removed)]);
+  notifySplice(List array, String path, int index, int added, List removed) {
+    print ("${_element} NOTIFY SPLICE OF ${path} at ${index}");
+    return _element.jsElement.callMethod('_notifySplice', [jsValue(array), path, index, added, jsValue(removed)]);
+  }
 
   void destroy() {
     cleanUpListener();
@@ -428,7 +433,7 @@ abstract class PolymerAutoNotifySupportMixin  {
   NotifierNodeRoot _rootNotifier;
 
   static created(mixin) {
-    print("MIXIN CREATED CALLED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11");
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!! MIXIN CREATED CALLED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   }
 
   void attached() {
