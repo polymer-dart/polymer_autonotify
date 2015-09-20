@@ -1,4 +1,4 @@
-library elys.auto_notify;
+library autonotify.support;
 
 import "package:polymer/polymer.dart";
 import "package:observe/observe.dart";
@@ -6,9 +6,9 @@ import "package:smoke/smoke.dart";
 import "package:logging/logging.dart";
 import "dart:async";
 
+Logger _logger = new Logger("autonotify.support");
 
-
-abstract class NotifierNode {
+abstract class PropertyNotifier {
   static final Map _notifiersCache = {};
 
 
@@ -16,19 +16,19 @@ abstract class NotifierNode {
   bool notifyPath(String name,var newValue);
   notifySplice(List array, String path, int index, int added, List removed);
 
-  NotifierNode() {
+  PropertyNotifier() {
 
   }
 
-  factory NotifierNode.fromTarget(target) {
-    NotifierNode n = _notifiersCache[target];
+  factory PropertyNotifier.from(target) {
+    PropertyNotifier n = _notifiersCache[target];
     if (n==null) {
       if (target is PolymerElement) {
-        n = new NotifierNodeRoot(target);
+        n = new PolymerElementPropertyNotifier(target);
       } else if (target is Observable) {
-        n = new NotifierObservableSubNode(target);
+        n = new ObservablePropertyNotifier(target);
       } else if (target is List) {
-        n = new NotifierListSubNode(target);
+        n = new ListPropertyNotifier(target);
       } else {
         return null;
       }
@@ -39,10 +39,10 @@ abstract class NotifierNode {
 
   void destroy();
 
-  static NotifierNode evict(target) => _notifiersCache.remove(target);
+  static PropertyNotifier evict(target) => _notifiersCache.remove(target);
 }
 
-abstract class HasChildrenMixin implements NotifierNode {
+abstract class HasChildrenMixin implements PropertyNotifier {
   Map<String,HasParentMixin> subNodes = {};
 
   void addChildren(target) {
@@ -54,7 +54,7 @@ abstract class HasChildrenMixin implements NotifierNode {
       }
 
 
-      HasParentMixin child = new NotifierNode.fromTarget(subTarget);
+      HasParentMixin child = new PropertyNotifier.from(subTarget);
       if (child!=null) {
         subNodes[subTarget] = child
           ..addReference(name, this);
@@ -77,7 +77,7 @@ abstract class HasChildrenMixin implements NotifierNode {
 
 }
 
-abstract class HasParentMixin implements NotifierNode {
+abstract class HasParentMixin implements PropertyNotifier {
   Map<String,List<HasChildrenMixin>> parents={};
 
   void removeReference(String name,HasChildrenMixin parent) {
@@ -113,16 +113,16 @@ abstract class HasParentMixin implements NotifierNode {
   }
 
   bool notifyPath(String name, newValue) {
-    parents.forEach((String parentName,List<NotifierNode> parents1) {
-      parents1.forEach((NotifierNode parent) {
+    parents.forEach((String parentName,List<PropertyNotifier> parents1) {
+      parents1.forEach((PropertyNotifier parent) {
         parent.notifyPath(parentName+"."+name,newValue);
       });
     });
   }
 
   notifySplice(List array, String path, int index, int added, List removed) {
-    parents.forEach((String parentName,List<NotifierNode> parents1) {
-      parents1.forEach((NotifierNode parent) {
+    parents.forEach((String parentName,List<PropertyNotifier> parents1) {
+      parents1.forEach((PropertyNotifier parent) {
         parent.notifySplice(array,path!=null? parentName+"."+path: parentName,index,added,removed);
       });
     });
@@ -159,7 +159,7 @@ abstract class HasChildrenReflectiveMixin implements HasChildrenMixin {
           child.removeReference(name,this);
         }
 
-        child = new NotifierNode.fromTarget(val);
+        child = new PropertyNotifier.from(val);
         if (child!=null) {
           subNodes[name] = child
             ..addReference(name,this);
@@ -177,10 +177,10 @@ abstract class HasChildrenReflectiveMixin implements HasChildrenMixin {
 
 }
 
-class NotifierNodeRoot extends NotifierNode with HasChildrenMixin, HasChildrenReflectiveMixin {
+class PolymerElementPropertyNotifier extends PropertyNotifier with HasChildrenMixin, HasChildrenReflectiveMixin {
   PolymerElement _element;
 
-  NotifierNodeRoot(PolymerElement element) {
+  PolymerElementPropertyNotifier(PolymerElement element) {
     _element = element;
     if (!(element is Observable)) {
       throw "Using notifier on non observable Polymer";
@@ -189,29 +189,33 @@ class NotifierNodeRoot extends NotifierNode with HasChildrenMixin, HasChildrenRe
   }
 
   bool notifyPath(String name, newValue) {
-    print ("${_element} NOTIFY ${name} with ${newValue}");
+    if (_logger.isLoggable(Level.FINE)) {
+      _logger.fine("${_element} NOTIFY ${name} with ${newValue}");
+    }
     return _element.notifyPath(name, newValue);
   }
 
   notifySplice(List array, String path, int index, int added, List removed) {
-    print ("${_element} NOTIFY SPLICE OF ${path} at ${index}");
+    if (_logger.isLoggable(Level.FINE)) {
+      _logger.fine("${_element} NOTIFY SPLICE OF ${path} at ${index}");
+    }
     return _element.jsElement.callMethod('_notifySplice', [jsValue(array), path, index, added, jsValue(removed)]);
   }
 
   void destroy() {
     cleanUpListener();
     destroyChildren();
-    NotifierNode.evict(_element);
+    PropertyNotifier.evict(_element);
   }
 
 
 }
 
-class NotifierObservableSubNode extends NotifierNode with HasParentMixin, HasChildrenMixin,HasChildrenReflectiveMixin {
+class ObservablePropertyNotifier extends PropertyNotifier with HasParentMixin, HasChildrenMixin,HasChildrenReflectiveMixin {
 
   Observable _target;
 
-  NotifierObservableSubNode(Observable target) {
+  ObservablePropertyNotifier(Observable target) {
     _target = target;
     init(_target);
   }
@@ -219,18 +223,18 @@ class NotifierObservableSubNode extends NotifierNode with HasParentMixin, HasChi
   void destroy() {
     cleanUpListener();
     destroyChildren();
-    NotifierNode.evict(_element);
+    PropertyNotifier.evict(_element);
   }
 
 
 }
 
-class NotifierListSubNode extends NotifierNode with HasParentMixin,HasChildrenMixin {
+class ListPropertyNotifier extends PropertyNotifier with HasParentMixin,HasChildrenMixin {
 
   List _target;
   StreamSubscription _sub;
 
-  NotifierListSubNode(List target) {
+  ListPropertyNotifier(List target) {
     _target = target;
     addChildren(_target);
 
@@ -274,7 +278,7 @@ class NotifierListSubNode extends NotifierNode with HasParentMixin,HasChildrenMi
             // Add new observers
             for (int i=lc.index;i<lc.addedCount+lc.index;i++) {
               if (target[i] is Observable || target[i] is ObservableList) {
-                HasParentMixin child = new NotifierNode.fromTarget(target[i]);
+                HasParentMixin child = new PropertyNotifier.from(target[i]);
                 if (child!=null) {
                   subNodes[i.toString()] = child
                     ..addReference(i.toString(),this);
@@ -299,129 +303,9 @@ class NotifierListSubNode extends NotifierNode with HasParentMixin,HasChildrenMi
       _sub.cancel();
     }
     destroyChildren();
-    NotifierNode.evict(_element);
+    PropertyNotifier.evict(_element);
 
   }
-
-
-}
-
-
-class ObservablePolymerNotifier {
-
-  static final Logger _logger = new Logger("polymer.auto.notify");
-
-  String _path="";
-  PolymerElement _element;
-  Observable _target;
-  StreamSubscription _sub;
-
-  Map<String,ObservablePolymerNotifier> _subNotifiers = {};
-
-  ObservablePolymerNotifier(PolymerElement element, var target,[String path=""]) {
-    _element = element;
-    _path = path;
-    _target = target;
-
-    if (target is Observable) {
-      _sub = target.changes.listen((List<ChangeRecord> recs) {
-        recs.where((ChangeRecord cr) => cr is PropertyChangeRecord).forEach((PropertyChangeRecord pcr) {
-          var val = pcr.newValue;
-          _notifySymbol(symbolToName(pcr.name), val);
-        });
-      });
-    } else if (target is ObservableList) {
-      _sub = (target as ObservableList).listChanges.listen((List<ListChangeRecord> rc){
-
-        // Notify splice
-        rc.forEach((ListChangeRecord lc) {
-
-          _notifySplice(target,"${_path}${symbolToName(pcr.name)}",lc.index,lc.addedCount,lc.removed);
-          // Fix observers
-          if(lc.removed!=null) {
-            for(int i=0;i<lc.removed.length;i++) {
-              _subNotifiers.remove((lc.index+i).toString()).close();
-            }
-            // fix path on the rest
-            for (int i=lc.index;i<target.length;i++) {
-              _subNotifiers[i.toString()]=_subNotifiers.remove((i+lc.removed.length).toString())
-                .._path="${_path}${symbolToName(pcr.name)}.${i}";
-            }
-
-          }
-          if (lc.addedCount>0) {
-            // Fix path on tail
-            for (int i=lc.index+lc.addedCount;i<target.length;i++) {
-              _subNotifiers[i.toString()] =_subNotifiers.remove((i-lc.addedCount).toString())
-                .._path="${_path}${symbolToName(pcr.name)}.${i}";
-            }
-
-            // Add new observers
-            for (int i=lc.index;i<lc.addedCount+lc.index;i++) {
-              _notifySymbol(i.toString(),target[i]);
-            }
-          }
-
-
-        });
-
-      });
-    }
-
-    // Add Sub
-
-    if (target is List) {
-      for (int i=0;i<target.length;i++) {
-        _notifySplice(target,"${_path}".substring(0,_path.length-1),0,target.length,target);
-        _notifySymbol(i.toString(),target[i],true);
-      }
-    } else {
-      List<Declaration> fields = query(target.runtimeType,new QueryOptions(includeFields:true,includeProperties:true,includeInherited:false));
-      fields.where((Declaration f) => f.annotations.any((a)=> a is ObservableProperty)).forEach((Declaration f) {
-        var fieldValue=read(target,f.name);
-        _notifySymbol(symbolToName(f.name),fieldValue);
-      });
-    }
-  }
-
-  void _notifySymbol(String name,var value,[bool onlyInstall=false]) {
-    String path = "${_path}${name}";
-    if (!onlyInstall) {
-      _logger.fine("Notify ${path} with ${value} for ${_element}");
-      if (value!=null)
-      _element.notifyPath(path,value);
-    }
-    _installSubNotifier(name,value);
-  }
-
-  void _installSubNotifier(String name,var target) {
-    // Attach a new sub notifier for observable objects
-
-    ObservablePolymerNotifier subNotifier = _subNotifiers[name];
-    if (subNotifier!=null) {
-      subNotifier.close();
-    }
-    String subPath = "${_path}${name}";
-    if (target!=null && (target is Observable || target is List)) {
-      _logger.fine("Installing subnotifier for ${name} with ${target}");
-      subNotifier = new ObservablePolymerNotifier(_element,target,"${subPath}.");
-      _subNotifiers[name] = subNotifier;
-    }
-
-  }
-
-  void  close() {
-    _subNotifiers.values.forEach((ObservablePolymerNotifier x) => x.close());
-    _subNotifiers.clear();
-    if (_sub!=null) {
-      _sub.cancel();
-      _sub=null;
-    }
-  }
-
-
-  void _notifySplice(List array, String path, int index, int added, List removed) =>
-    _element.jsElement.callMethod('_notifySplice', [jsValue(array),path,index,added, jsValue(removed)]);
 
 
 }
@@ -430,21 +314,17 @@ class ObservablePolymerNotifier {
 abstract class PolymerAutoNotifySupportMixin  {
   //ObservablePolymerNotifier _observablePolymerNotifier;
 
-  NotifierNodeRoot _rootNotifier;
+  PolymerElementPropertyNotifier _rootNotifier;
 
-  static created(mixin) {
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!! MIXIN CREATED CALLED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  }
-
-  void attached() {
+  static void created(mixin) {
     //_observablePolymerNotifier = new ObservablePolymerNotifier(this,this);
-    _rootNotifier = new NotifierNode.fromTarget(this);
+    mixin._rootNotifier = new PropertyNotifier.from(mixin);
   }
 
-  void detached() {
+  static void detached(mixin) {
     //_observablePolymerNotifier.close();
     //_observablePolymerNotifier=null;
-    _rootNotifier.destroy();
+    mixin._rootNotifier.destroy();
   }
 
 }
