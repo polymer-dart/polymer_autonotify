@@ -21,19 +21,22 @@ abstract class PropertyNotifier {
   }
 
   factory PropertyNotifier.from(target) {
-    PropertyNotifier n = _notifiersCache[target];
+    PropertyNotifier n = _notifiersCache.putIfAbsent(target,() {
+        if (target is PolymerElement) {
+          return new PolymerElementPropertyNotifier(target);
+        } else if (target is Observable) {
+          return new ObservablePropertyNotifier(target);
+        } else if (target is List) {
+          return new ListPropertyNotifier(target);
+        } else {
+          return null;
+        }
+    });
+
     if (n==null) {
-      if (target is PolymerElement) {
-        n = new PolymerElementPropertyNotifier(target);
-      } else if (target is Observable) {
-        n = new ObservablePropertyNotifier(target);
-      } else if (target is List) {
-        n = new ListPropertyNotifier(target);
-      } else {
-        return null;
-      }
-      _notifiersCache[target] = n;
+      _notifiersCache.remove(target);
     }
+
     return n;
   }
 
@@ -312,18 +315,13 @@ class ListPropertyNotifier extends PropertyNotifier with HasParentMixin,HasChild
 
 @behavior
 abstract class PolymerAutoNotifySupportMixin  {
-  //ObservablePolymerNotifier _observablePolymerNotifier;
-
   PolymerElementPropertyNotifier _rootNotifier;
 
   static void created(mixin) {
-    //_observablePolymerNotifier = new ObservablePolymerNotifier(this,this);
     mixin._rootNotifier = new PropertyNotifier.from(mixin);
   }
 
   static void detached(mixin) {
-    //_observablePolymerNotifier.close();
-    //_observablePolymerNotifier=null;
     mixin._rootNotifier.destroy();
   }
 
