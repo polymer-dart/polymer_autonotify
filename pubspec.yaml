@@ -8,6 +8,7 @@ sdk: ">=1.8.0 <2.0.0"
 dependencies:
  polymer: ">=1.0.0 <2.0.0"
  observe: any
+ barback: any
 
 dependency_overrides:
   polymer:
