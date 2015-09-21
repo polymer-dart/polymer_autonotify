@@ -10,6 +10,7 @@ Logger _logger = new Logger("autonotify.support");
 
 abstract class PropertyNotifier {
   static final Map _notifiersCache = {};
+  static final Map _cycleDetection={};
 
 
 
@@ -21,13 +22,18 @@ abstract class PropertyNotifier {
   }
 
   factory PropertyNotifier.from(target) {
+    if (_cycleDetection[target]) {
+      _logger.warning("A cycle in notifiers as been detected : ${target}");
+      return null;
+    }
+    _cycleDetection[target] = true;
     PropertyNotifier n = _notifiersCache.putIfAbsent(target,() {
         if (target is PolymerElement) {
           return new PolymerElementPropertyNotifier(target);
+        }  else if (target is List || target is ObservableList) {
+          return new ListPropertyNotifier(target);
         } else if (target is Observable) {
           return new ObservablePropertyNotifier(target);
-        } else if (target is List) {
-          return new ListPropertyNotifier(target);
         } else {
           return null;
         }
@@ -36,6 +42,8 @@ abstract class PropertyNotifier {
     if (n==null) {
       _notifiersCache.remove(target);
     }
+
+    _cycleDetection[target]=false;
 
     return n;
   }
@@ -135,8 +143,8 @@ abstract class HasParentMixin implements PropertyNotifier {
 abstract class HasChildrenReflectiveMixin implements HasChildrenMixin {
 
   Map discoverChildren(target) {
-    List<Declaration> fields = query(target.runtimeType,new QueryOptions(includeFields:true,includeProperties:true,includeInherited:false));
-    return new Map.fromIterable(fields.where((Declaration f) => f.annotations.any((a)=> a is ObservableProperty)),
+    List<Declaration> fields = query(target.runtimeType,new QueryOptions(includeFields:true,includeProperties:true,includeInherited:false,withAnnotations:[ObservableProperty]));
+    return new Map.fromIterable(fields,
       key:(Declaration f) => symbolToName(f.name),
       value:(Declaration f) => read(target,f.name));
   }
@@ -200,8 +208,9 @@ class PolymerElementPropertyNotifier extends PropertyNotifier with HasChildrenMi
 
   notifySplice(List array, String path, int index, int added, List removed) {
     if (_logger.isLoggable(Level.FINE)) {
-      _logger.fine("${_element} NOTIFY SPLICE OF ${path} at ${index}");
+      _logger.fine("${_element} NOTIFY SPLICE OF ${path} at ${index}, added ${added} , removed ${removed.length}");
     }
+
     return _element.jsElement.callMethod('_notifySplice', [jsValue(array), path, index, added, jsValue(removed)]);
   }
 
@@ -251,7 +260,7 @@ class ListPropertyNotifier extends PropertyNotifier with HasParentMixin,HasChild
           // Adjust references
 
           // Fix observers
-          if(lc.removed!=null) {
+          if(lc.removed!=null&&lc.removed.length>0) {
             for(int i=0;i<lc.removed.length;i++) {
               String name = (lc.index+i).toString();
               subNodes.remove(name).removeReference(name,this);
@@ -262,7 +271,7 @@ class ListPropertyNotifier extends PropertyNotifier with HasParentMixin,HasChild
               String fromName = (i+lc.removed.length).toString();
               String toName = i.toString();
 
-              _subNotifiers[toName]=_subNotifiers.remove(fromName)
+              subNodes[toName]=subNodes.remove(fromName)
                 ..renameReference(fromName,toName,this);
 
             }
@@ -274,7 +283,7 @@ class ListPropertyNotifier extends PropertyNotifier with HasParentMixin,HasChild
               String fromName = (i-lc.addedCount).toString();
               String toName = i.toString();
 
-              _subNotifiers[toName] =_subNotifiers.remove(fromName)
+              subNodes[toName] =subNodes.remove(fromName)
                 ..renameReference(fromName,toName,this);
             }
 
