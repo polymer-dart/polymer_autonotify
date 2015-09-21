@@ -5,7 +5,7 @@ import "package:observe/observe.dart";
 import "package:smoke/smoke.dart";
 import "package:logging/logging.dart";
 import "dart:async";
-
+import "dart:js";
 Logger _logger = new Logger("autonotify.support");
 
 abstract class PropertyNotifier {
@@ -210,8 +210,28 @@ class PolymerElementPropertyNotifier extends PropertyNotifier with HasChildrenMi
     if (_logger.isLoggable(Level.FINE)) {
       _logger.fine("${_element} NOTIFY SPLICE OF ${path} at ${index}, added ${added} , removed ${removed.length}");
     }
+/*
+    if (removed!=null&&removed.length>0) {
+      _element.removeRange(path,index,removed.length);
+    }
 
-    return _element.jsElement.callMethod('_notifySplice', [jsValue(array), path, index, added, jsValue(removed)]);
+    if (added>0) {
+      _element.insertAll(path,index,array.sublist(index,added));
+    }
+*/
+    //if (jsValue(array).length!=array.length) {
+    //_tmpFakeNoLoop[array]=true;
+    //  _element.jsElement.callMethod("splice",[path,index,removed.length]..addAll(array.sublist(index,added).map((x)=>jsValue(x))));
+    //} else {
+      JsArray ar = jsValue(array);
+    ar.callMethod("splice",[index, removed.length]..addAll(array.sublist(index,index+added).map((x)=>jsValue(x))));
+      _element.jsElement.callMethod('_notifySplice', [ar, path, index, added, jsValue(removed)]);
+    //}
+
+   // _element.jsElement.callMethod("splice",[path,index,removed.length]..addAll(array.sublist(index,added).map((x)=>jsValue(x))));
+
+  //  var ar = _element.jsElement[path];
+    //  return
   }
 
   void destroy() {
@@ -222,6 +242,8 @@ class PolymerElementPropertyNotifier extends PropertyNotifier with HasChildrenMi
 
 
 }
+
+Map<List,bool> _tmpFakeNoLoop = new Map();
 
 class ObservablePropertyNotifier extends PropertyNotifier with HasParentMixin, HasChildrenMixin,HasChildrenReflectiveMixin {
 
@@ -255,6 +277,11 @@ class ListPropertyNotifier extends PropertyNotifier with HasParentMixin,HasChild
       _sub = (target as ObservableList).listChanges.listen((List<ListChangeRecord> rc) {
         // Notify splice
         rc.forEach((ListChangeRecord lc) {
+          // Avoid loops when splicing jsArray
+          if (_tmpFakeNoLoop[_target]) {
+            _tmpFakeNoLoop.remove(_target);
+           return;
+          }
           notifySplice(_target, null, lc.index, lc.addedCount, lc.removed);
 
           // Adjust references
@@ -272,7 +299,7 @@ class ListPropertyNotifier extends PropertyNotifier with HasParentMixin,HasChild
               String toName = i.toString();
 
               subNodes[toName]=subNodes.remove(fromName)
-                ..renameReference(fromName,toName,this);
+                ..renameReference(int.parse(fromName),int.parse(toName),this);
 
             }
 
@@ -284,7 +311,7 @@ class ListPropertyNotifier extends PropertyNotifier with HasParentMixin,HasChild
               String toName = i.toString();
 
               subNodes[toName] =subNodes.remove(fromName)
-                ..renameReference(fromName,toName,this);
+                ..renameReference(int.parse(fromName),int.parse(toName),this);
             }
 
             // Add new observers
