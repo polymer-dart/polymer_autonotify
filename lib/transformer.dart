@@ -20,6 +20,8 @@ class AutoNotifierTransformer extends Transformer with ResolverTransformer {
     resolvers = new Resolvers(dartSdkDirectory);
   }
 
+
+
 /*
   classifyPrimary(AssetId id) {
     if (id.path.endsWith(".dart")) {
@@ -29,9 +31,17 @@ class AutoNotifierTransformer extends Transformer with ResolverTransformer {
     }
   }
 */
-  Future<bool> shouldApplyResolver(Asset asset) async {
-    return asset.id.path.endsWith(".dart");
+
+
+  Future<bool> isPrimary(assetOrId) {
+    if (_settings.mode==BarbackMode.DEBUG) {
+      return new Future.value(false);
+    } else {
+      return super.isPrimary(assetOrId);
+    }
   }
+
+
 
   @override
   Future applyResolver(Transform transform, Resolver resolver) {
@@ -58,7 +68,7 @@ class AutoNotifierTransformer extends Transformer with ResolverTransformer {
                     clazz.fields.any((FieldElement fe) => fe.metadata.any((ElementAnnotation ea) => ea.element.name=="observable")) ||
                     clazz.accessors.any((PropertyAccessorElement pa) => pa.metadata.any((ElementAnnotation ea) => ea.element.name=="observable"))))
         .forEach((ClassElement clazz) {
-          print("${_primaryInputId}: Recording ${clazz.name} from ${lib.name}");
+          //print("${_primaryInputId}: Recording ${clazz.name} from ${lib.name}");
 
           recorder.runQuery(clazz, new QueryOptions(includeProperties: true,includeFields:true,includeInherited:false,matches:(String name)=>!name.startsWith("_")));
 
