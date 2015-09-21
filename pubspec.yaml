@@ -1,5 +1,5 @@
 name: polymer_autonotify
-version: 0.0.2
+version: 0.0.3-SNAPSHOT
 author: Vittorio Ballestra (Drafintech s.r.l.) <vittorio.ballestra@gmail.com>
 description: auto notify support for Polymer 1.0
 homepage : https://github.com/dam0vm3nt/polymer_autonotify
@@ -10,13 +10,13 @@ dependencies:
  observe: any
  barback: any
 
-dependency_overrides:
-  polymer:
-    git:
-      ref: behaviors
-      url: https://github.com/dart-lang/polymer-dart.git
-  polymer_interop:
-    git:
-      ref: 0.2.0-dev
-      url: https://github.com/dart-lang/polymer_interop.git
+#dependency_overrides:
+#  polymer:
+#    git:
+#      ref: behaviors
+#      url: https://github.com/dart-lang/polymer-dart.git
+#  polymer_interop:
+#    git:
+#      ref: 0.2.0-dev
+#      url: https://github.com/dart-lang/polymer_interop.git
 
