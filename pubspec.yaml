@@ -10,13 +10,13 @@ dependencies:
  observe: any
  barback: any
 
-#dependency_overrides:
-#  polymer:
-#    git:
-#      ref: behaviors
-#      url: https://github.com/dart-lang/polymer-dart.git
-#  polymer_interop:
-#    git:
-#      ref: 0.2.0-dev
-#      url: https://github.com/dart-lang/polymer_interop.git
+dependency_overrides:
+  polymer:
+    git:
+      ref: behaviors
+      url: https://github.com/dart-lang/polymer-dart.git
+  polymer_interop:
+    git:
+      ref: 0.2.0-dev
+      url: https://github.com/dart-lang/polymer_interop.git
 
