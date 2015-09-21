@@ -226,7 +226,7 @@ class ObservablePropertyNotifier extends PropertyNotifier with HasParentMixin, H
   void destroy() {
     cleanUpListener();
     destroyChildren();
-    PropertyNotifier.evict(_element);
+    PropertyNotifier.evict(_target);
   }
 
 
