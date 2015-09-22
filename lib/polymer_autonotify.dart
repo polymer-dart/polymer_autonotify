@@ -12,6 +12,7 @@ Logger _logger = new Logger("autonotify.support");
 abstract class PropertyNotifier {
   static final Map _notifiersCache = {};
   static final Map _cycleDetection = {};
+  static final Expando<PropertyNotifier> _notifiers = new Expando();
 
   bool notifyPath(String name, var newValue);
   notifySplice(List array, String path, int index, int added, List removed);
@@ -19,6 +20,9 @@ abstract class PropertyNotifier {
   PropertyNotifier() {}
 
   factory PropertyNotifier.from(target) {
+
+
+
     if (_cycleDetection[target]) {
       _logger.warning("A cycle in notifiers as been detected : ${target}");
       return null;
@@ -188,6 +192,8 @@ abstract class HasChildrenReflectiveMixin implements HasChildrenMixin {
 class PolymerElementPropertyNotifier extends PropertyNotifier
     with HasChildrenMixin, HasChildrenReflectiveMixin {
   PolymerElement _element;
+  //Expando<ChangeVersion> _notifyVersionTrackingExpando = new Expando();
+
 
   PolymerElementPropertyNotifier(PolymerElement element) {
     _element = element;
@@ -205,10 +211,6 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
   }
 
   notifySplice(List array, String path, int index, int added, List removed) {
-    if (_logger.isLoggable(Level.FINE)) {
-      _logger.fine(
-          "${_element} NOTIFY SPLICE OF ${path} at ${index}, added ${added} , removed ${removed.length}");
-    }
 
     JsArray js = jsValue(array);
     ChangeVersion jsVersion = new ChangeVersion(js);
@@ -216,16 +218,36 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
     // Sync'em
     if (jsVersion.version != dartVersion.version) {
       assert(jsVersion.version == dartVersion.version - 1);
+      if (_logger.isLoggable(Level.FINE)) {
+        _logger.fine(
+            "${_element} MODIFY JS ARRAY ${jsVersion.version} != ${dartVersion.version} : ${path} at ${index}, added ${added} , removed ${removed.length}");
+      }
       jsVersion.version = dartVersion.version;
       js.callMethod(
           "splice",
           [index, removed.length]
             ..addAll(
                 array.sublist(index, index + added).map((x) => jsValue(x))));
+
+
+      _element.jsElement.callMethod(
+          '_notifySplice', [js, path, index, added, jsValue(removed)]);
+
     }
-    // Always notify
-    _element.jsElement.callMethod(
-        '_notifySplice', [js, path, index, added, jsValue(removed)]);
+    /*
+    // Notify this splice only once per referencing element
+    ChangeVersion notifyVersion = new ChangeVersion(array,fromExpando:_notifyVersionTrackingExpando);
+    if (notifyVersion.version!=dartVersion.version) {
+      if (_logger.isLoggable(Level.FINE)) {
+        _logger.fine(
+            "${_element} NOTIFY SPLICE OF ${notifyVersion.version} != ${dartVersion.version} : ${path} at ${index}, added ${added} , removed ${removed.length}");
+      }
+      notifyVersion.version=dartVersion.version;
+      _element.jsElement.callMethod(
+          '_notifySplice', [js, path, index, added, jsValue(removed)]);
+
+
+    }*/
   }
 
   void destroy() {
@@ -241,11 +263,14 @@ class ChangeVersion {
 
   ChangeVersion._([this.version = 0]);
 
-  factory ChangeVersion(target) {
-    ChangeVersion v = _versionTrackingExpando[target];
+  factory ChangeVersion(target,{Expando<ChangeVersion> fromExpando}) {
+    if (fromExpando==null) {
+      fromExpando=_versionTrackingExpando;
+    }
+    ChangeVersion v = fromExpando[target];
     if (v == null) {
       v = new ChangeVersion._();
-      _versionTrackingExpando[target] = v;
+      fromExpando[target] = v;
     }
     return v;
   }
