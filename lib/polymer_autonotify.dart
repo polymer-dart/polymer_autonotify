@@ -43,7 +43,6 @@ abstract class PropertyNotifier {
             return null;
           }
         }();
-
       }
 
       if (n != null) {
@@ -119,7 +118,7 @@ abstract class HasParentMixin implements PropertyNotifier {
         parents.remove(fromName);
       }
     }
-    refs = parents.putIfAbsent(toName,  () => new List());
+    refs = parents.putIfAbsent(toName, () => new List());
     refs.add(parent);
   }
 
@@ -237,15 +236,12 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
           "splice",
           [index, removed.length]
             ..addAll(
-              array.sublist(index, index + added).map((x) => jsValue(x))));
-      _element.jsElement.callMethod(
-          '_notifySplice', [js, path, index, added, jsRemoved]);
+                array.sublist(index, index + added).map((x) => jsValue(x))));
+      _element.jsElement
+          .callMethod('_notifySplice', [js, path, index, added, jsRemoved]);
       _logger.fine("INITIAL2:${js}");
 
-
       _logger.fine("FINAL:${js}");
-
-
     }
     /*
     // Notify this splice only once per referencing element
@@ -346,23 +342,23 @@ class ListPropertyNotifier extends PropertyNotifier
           }
           if (lc.addedCount > 0) {
             // Fix path on tail
-            for (int i = target.length-1; i >= lc.index + lc.addedCount; i--) {
+            for (int i = target.length - 1;
+                i >= lc.index + lc.addedCount;
+                i--) {
               String fromName = (i - lc.addedCount).toString();
               String toName = i.toString();
 
               subNodes[toName] = subNodes.remove(fromName)
-                ..renameReference(fromName,toName, this);
+                ..renameReference(fromName, toName, this);
             }
 
             // Add new observers
             for (int i = lc.index; i < lc.addedCount + lc.index; i++) {
-
               HasParentMixin child = new PropertyNotifier.from(target[i]);
               if (child != null) {
                 subNodes[i.toString()] = child
                   ..addReference(i.toString(), this);
               }
-
             }
           }
         });
