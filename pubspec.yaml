@@ -12,9 +12,10 @@ dependencies:
 
 dependency_overrides:
   polymer:
-    git:
-      ref: behaviors
-      url: https://github.com/dart-lang/polymer-dart.git
+   path: ../polymer-dart
+#    git:
+ #     ref: behaviors
+  #    url: https://github.com/dart-lang/polymer-dart.git
   polymer_interop:
     git:
       ref: 0.2.0-dev

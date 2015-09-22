@@ -6,6 +6,7 @@ import "package:smoke/smoke.dart";
 import "package:logging/logging.dart";
 import "dart:async";
 import "dart:js";
+import "package:polymer/init.dart" show polymerDartSyncDisabled;
 
 Logger _logger = new Logger("autonotify.support");
 
@@ -211,7 +212,13 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
     if (_logger.isLoggable(Level.FINE)) {
       _logger.fine("${_element} NOTIFY ${name} with ${newValue}");
     }
-    return _element.notifyPath(name, newValue);
+    try {
+      polymerDartSyncDisabled = true;
+      return _element.notifyPath(name, newValue);
+    } finally {
+      polymerDartSyncDisabled =false;
+    }
+
   }
 
   notifySplice(List array, String path, int index, int added, List removed) {
@@ -227,18 +234,29 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
       jsVersion.version = dartVersion.version;
 
       _logger.fine("INITIAL:${js}");
-/*
-      _element.jsElement.callMethod("_originalSplice",[path,index,removed.length]..addAll(
-          array.sublist(index, index + added).map((x) => jsValue(x))));
-          */
 
+      try {
+        polymerDartSyncDisabled = true;
+
+        _element.jsElement.callMethod("splice", [path, index, removed.length]
+          ..addAll(
+            array.sublist(index, index + added).map((x) => jsValue(x))));
+      } finally {
+        polymerDartSyncDisabled = false;
+      }
+
+      // Try with notify splices only
+      JsObject splices = new JsObject.jsify({
+
+      });
+/*
       var jsRemoved = js.callMethod(
           "splice",
           [index, removed.length]
             ..addAll(
                 array.sublist(index, index + added).map((x) => jsValue(x))));
       _element.jsElement
-          .callMethod('_notifySplice', [js, path, index, added, jsRemoved]);
+          .callMethod('_notifySplice', [js, path, index, added, jsRemoved]);*/
       _logger.fine("INITIAL2:${js}");
 
       _logger.fine("FINAL:${js}");
