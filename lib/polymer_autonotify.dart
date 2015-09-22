@@ -10,7 +10,7 @@ import "dart:js";
 Logger _logger = new Logger("autonotify.support");
 
 abstract class PropertyNotifier {
-  static final Expando<PropertyNotifier> _notifiersCache = {};
+  static final Expando<PropertyNotifier> _notifiersCache = new Expando();
   static final Map _cycleDetection = {};
 
   bool notifyPath(String name, var newValue);
@@ -19,8 +19,12 @@ abstract class PropertyNotifier {
   PropertyNotifier() {}
 
   factory PropertyNotifier.from(target) {
-    if (_cycleDetection[target]) {
+    if (_cycleDetection[target] != null) {
       _logger.warning("A cycle in notifiers as been detected : ${target}");
+      return null;
+    }
+    // Expandos don't work for these objects.
+    if (target is String || target is num || target == null || target is bool) {
       return null;
     }
     _cycleDetection[target] = true;
@@ -53,7 +57,7 @@ abstract class PropertyNotifier {
 
   void destroy();
 
-  static PropertyNotifier evict(target) => _notifiersCache.remove(target);
+  static PropertyNotifier evict(target) => _notifiersCache[target] = null;
 }
 
 abstract class HasChildrenMixin implements PropertyNotifier {
