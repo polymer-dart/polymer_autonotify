@@ -10,9 +10,8 @@ import "dart:js";
 Logger _logger = new Logger("autonotify.support");
 
 abstract class PropertyNotifier {
-  static final Map _notifiersCache = {};
+  static final Expando<PropertyNotifier> _notifiersCache = {};
   static final Map _cycleDetection = {};
-  static final Expando<PropertyNotifier> _notifiers = new Expando();
 
   bool notifyPath(String name, var newValue);
   notifySplice(List array, String path, int index, int added, List removed);
@@ -20,32 +19,35 @@ abstract class PropertyNotifier {
   PropertyNotifier() {}
 
   factory PropertyNotifier.from(target) {
-
-
-
     if (_cycleDetection[target]) {
       _logger.warning("A cycle in notifiers as been detected : ${target}");
       return null;
     }
     _cycleDetection[target] = true;
-    PropertyNotifier n = _notifiersCache.putIfAbsent(target, () {
-      if (target is PolymerElement) {
-        return new PolymerElementPropertyNotifier(target);
-      } else if (target is List || target is ObservableList) {
-        return new ListPropertyNotifier(target);
-      } else if (target is Observable) {
-        return new ObservablePropertyNotifier(target);
-      } else {
-        return null;
+    PropertyNotifier n;
+    try {
+      n = _notifiersCache[target];
+      if (n == null) {
+        n = () {
+          if (target is PolymerElement) {
+            return new PolymerElementPropertyNotifier(target);
+          } else if (target is List || target is ObservableList) {
+            return new ListPropertyNotifier(target);
+          } else if (target is Observable) {
+            return new ObservablePropertyNotifier(target);
+          } else {
+            return null;
+          }
+        }();
+
       }
-    });
 
-    if (n == null) {
-      _notifiersCache.remove(target);
+      if (n != null) {
+        _notifiersCache[target] = n;
+      }
+    } finally {
+      _cycleDetection.remove(target);
     }
-
-    _cycleDetection[target] = false;
-
     return n;
   }
 
@@ -67,7 +69,7 @@ abstract class HasChildrenMixin implements PropertyNotifier {
 
       HasParentMixin child = new PropertyNotifier.from(subTarget);
       if (child != null) {
-        subNodes[subTarget] = child..addReference(name, this);
+        subNodes[name] = child..addReference(name, this);
       }
     });
   }
@@ -90,7 +92,7 @@ abstract class HasParentMixin implements PropertyNotifier {
     if (refs != null) {
       refs.remove(parent);
       if (refs.length == 0) {
-        refs.remove(name);
+        parents.remove(name);
       }
     }
     if (parents.isEmpty) {
@@ -110,10 +112,10 @@ abstract class HasParentMixin implements PropertyNotifier {
     if (refs != null) {
       refs.remove(parent);
       if (refs.length == 0) {
-        refs.remove(fromName);
+        parents.remove(fromName);
       }
     }
-    refs = parents.putIfAbsent(toName, ifAbsent: () => new List());
+    refs = parents.putIfAbsent(toName,  () => new List());
     refs.add(parent);
   }
 
@@ -194,7 +196,6 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
   PolymerElement _element;
   //Expando<ChangeVersion> _notifyVersionTrackingExpando = new Expando();
 
-
   PolymerElementPropertyNotifier(PolymerElement element) {
     _element = element;
     if (!(element is Observable)) {
@@ -211,7 +212,6 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
   }
 
   notifySplice(List array, String path, int index, int added, List removed) {
-
     JsArray js = jsValue(array);
     ChangeVersion jsVersion = new ChangeVersion(js);
     ChangeVersion dartVersion = new ChangeVersion(array);
@@ -229,10 +229,8 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
             ..addAll(
                 array.sublist(index, index + added).map((x) => jsValue(x))));
 
-
       _element.jsElement.callMethod(
           '_notifySplice', [js, path, index, added, jsValue(removed)]);
-
     }
     /*
     // Notify this splice only once per referencing element
@@ -263,9 +261,9 @@ class ChangeVersion {
 
   ChangeVersion._([this.version = 0]);
 
-  factory ChangeVersion(target,{Expando<ChangeVersion> fromExpando}) {
-    if (fromExpando==null) {
-      fromExpando=_versionTrackingExpando;
+  factory ChangeVersion(target, {Expando<ChangeVersion> fromExpando}) {
+    if (fromExpando == null) {
+      fromExpando = _versionTrackingExpando;
     }
     ChangeVersion v = fromExpando[target];
     if (v == null) {
@@ -328,7 +326,7 @@ class ListPropertyNotifier extends PropertyNotifier
               String toName = i.toString();
 
               subNodes[toName] = subNodes.remove(fromName)
-                ..renameReference(int.parse(fromName), int.parse(toName), this);
+                ..renameReference(fromName, toName, this);
             }
           }
           if (lc.addedCount > 0) {
@@ -338,7 +336,7 @@ class ListPropertyNotifier extends PropertyNotifier
               String toName = i.toString();
 
               subNodes[toName] = subNodes.remove(fromName)
-                ..renameReference(int.parse(fromName), int.parse(toName), this);
+                ..renameReference(fromName,toName, this);
             }
 
             // Add new observers
