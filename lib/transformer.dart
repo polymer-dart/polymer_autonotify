@@ -20,8 +20,6 @@ class AutoNotifierTransformer extends Transformer with ResolverTransformer {
     resolvers = new Resolvers(dartSdkDirectory);
   }
 
-
-
 /*
   classifyPrimary(AssetId id) {
     if (id.path.endsWith(".dart")) {
@@ -32,16 +30,13 @@ class AutoNotifierTransformer extends Transformer with ResolverTransformer {
   }
 */
 
-
   Future<bool> isPrimary(assetOrId) {
-    if (_settings.mode==BarbackMode.DEBUG) {
+    if (_settings.mode == BarbackMode.DEBUG) {
       return new Future.value(false);
     } else {
       return super.isPrimary(assetOrId);
     }
   }
-
-
 
   @override
   Future applyResolver(Transform transform, Resolver resolver) {
@@ -58,24 +53,30 @@ class AutoNotifierTransformer extends Transformer with ResolverTransformer {
     Recorder recorder = new Recorder(generator,
         (lib) => resolver.getImportUri(lib, from: _primaryInputId).toString());
 
-
     // Record each class in the library for our generator
     resolver.libraries.forEach((LibraryElement lib) {
       List<ClassElement> classes = lib.units.expand((u) => u.types);
-      classes.where((ClassElement clazz) =>
-      (clazz.allSupertypes.any((InterfaceType it) => it.name=="Observable" || it.name=="ChangeNotifier") ) && (
-                    clazz.mixins.any((InterfaceType it) => it.name=="PolymerAutoNotifySupportMixin") ||
-                    clazz.fields.any((FieldElement fe) => fe.metadata.any((ElementAnnotation ea) => ea.element.name=="observable")) ||
-                    clazz.accessors.any((PropertyAccessorElement pa) => pa.metadata.any((ElementAnnotation ea) => ea.element.name=="observable"))))
-        .forEach((ClassElement clazz) {
-          //print("${_primaryInputId}: Recording ${clazz.name} from ${lib.name}");
+      classes
+          .where((ClassElement clazz) => (clazz.allSupertypes.any((InterfaceType it) =>
+                  it.name == "Observable" || it.name == "ChangeNotifier")) &&
+              (clazz.mixins.any((InterfaceType it) => it.name == "PolymerAutoNotifySupportMixin") ||
+                  clazz.fields.any((FieldElement fe) => fe.metadata.any(
+                      (ElementAnnotation ea) =>
+                          ea.element.name == "observable")) ||
+                  clazz.accessors.any((PropertyAccessorElement pa) =>
+                      pa.metadata.any((ElementAnnotation ea) => ea.element.name == "observable"))))
+          .forEach((ClassElement clazz) {
+        //print("${_primaryInputId}: Recording ${clazz.name} from ${lib.name}");
 
-          recorder.runQuery(clazz, new QueryOptions(includeProperties: true,includeFields:true,includeInherited:false,matches:(String name)=>!name.startsWith("_")));
-
+        recorder.runQuery(
+            clazz,
+            new QueryOptions(
+                includeProperties: true,
+                includeFields: true,
+                includeInherited: false,
+                matches: (String name) => !name.startsWith("_")));
       });
     });
-
-
 
     // Generate the Smoke bootstrapper
     StringBuffer sb = new StringBuffer();
@@ -97,14 +98,18 @@ class AutoNotifierTransformer extends Transformer with ResolverTransformer {
     Asset origPrimaryAsset = await _transform.getInput(_primaryInputId);
     String origAssetContent = await origPrimaryAsset.readAsString();
     String p = bootstrapId.path;
-    int pi=p.lastIndexOf("/");
-    if (pi>=0) {
-      p = p.substring(pi+1);
+    int pi = p.lastIndexOf("/");
+    if (pi >= 0) {
+      p = p.substring(pi + 1);
     }
-    String result = origAssetContent.replaceAll(new RegExp("import\\s*['\"]package:smoke/mirrors.dart['\"]\s*;"),"import '${p}' as _notif;")
-      .replaceAll(new RegExp("useMirrors\\(\\);"),"_notif.initSmokeWithStaticConfiguration();");
+    String result = origAssetContent
+        .replaceAll(
+            new RegExp("import\\s*['\"]package:smoke/mirrors.dart['\"]\s*;"),
+            "import '${p}' as _notif;")
+        .replaceAll(new RegExp("useMirrors\\(\\);"),
+            "_notif.initSmokeWithStaticConfiguration();");
     //print("MODIFIED ASSET:${result}");
-    _transform.addOutput(new Asset.fromString(_primaryInputId,result));
+    _transform.addOutput(new Asset.fromString(_primaryInputId, result));
   }
 
   String get allowedExtensions => '.dart';
