@@ -212,25 +212,36 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
   }
 
   notifySplice(List array, String path, int index, int added, List removed) {
-    JsArray js = jsValue(array);
+    JsArray js = jsValue(_element.get(path));
     ChangeVersion jsVersion = new ChangeVersion(js);
     ChangeVersion dartVersion = new ChangeVersion(array);
     // Sync'em
     if (jsVersion.version != dartVersion.version) {
-      assert(jsVersion.version == dartVersion.version - 1);
       if (_logger.isLoggable(Level.FINE)) {
         _logger.fine(
             "${_element} MODIFY JS ARRAY ${jsVersion.version} != ${dartVersion.version} : ${path} at ${index}, added ${added} , removed ${removed.length}");
       }
       jsVersion.version = dartVersion.version;
-      js.callMethod(
+
+      _logger.fine("INITIAL:${js}");
+/*
+      _element.jsElement.callMethod("_originalSplice",[path,index,removed.length]..addAll(
+          array.sublist(index, index + added).map((x) => jsValue(x))));
+          */
+
+      var jsRemoved = js.callMethod(
           "splice",
           [index, removed.length]
             ..addAll(
-                array.sublist(index, index + added).map((x) => jsValue(x))));
-
+              array.sublist(index, index + added).map((x) => jsValue(x))));
       _element.jsElement.callMethod(
-          '_notifySplice', [js, path, index, added, jsValue(removed)]);
+          '_notifySplice', [js, path, index, added, jsRemoved]);
+      _logger.fine("INITIAL2:${js}");
+
+
+      _logger.fine("FINAL:${js}");
+
+
     }
     /*
     // Notify this splice only once per referencing element
@@ -331,7 +342,7 @@ class ListPropertyNotifier extends PropertyNotifier
           }
           if (lc.addedCount > 0) {
             // Fix path on tail
-            for (int i = lc.index + lc.addedCount; i < target.length; i++) {
+            for (int i = target.length-1; i >= lc.index + lc.addedCount; i--) {
               String fromName = (i - lc.addedCount).toString();
               String toName = i.toString();
 
@@ -341,13 +352,13 @@ class ListPropertyNotifier extends PropertyNotifier
 
             // Add new observers
             for (int i = lc.index; i < lc.addedCount + lc.index; i++) {
-              if (target[i] is Observable || target[i] is ObservableList) {
-                HasParentMixin child = new PropertyNotifier.from(target[i]);
-                if (child != null) {
-                  subNodes[i.toString()] = child
-                    ..addReference(i.toString(), this);
-                }
+
+              HasParentMixin child = new PropertyNotifier.from(target[i]);
+              if (child != null) {
+                subNodes[i.toString()] = child
+                  ..addReference(i.toString(), this);
               }
+
             }
           }
         });
@@ -367,7 +378,7 @@ class ListPropertyNotifier extends PropertyNotifier
       _sub.cancel();
     }
     destroyChildren();
-    PropertyNotifier.evict(_element);
+    PropertyNotifier.evict(_target);
   }
 }
 
