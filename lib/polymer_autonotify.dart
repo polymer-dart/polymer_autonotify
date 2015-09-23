@@ -125,7 +125,7 @@ abstract class HasParentMixin implements PropertyNotifier {
 
   bool notifyPath(String name, newValue) {
     parents.forEach((String parentName, List<PropertyNotifier> parents1) {
-      parents1.forEach((PropertyNotifier parent) {
+      parents1.sublist(0,1).forEach((PropertyNotifier parent) {
         parent.notifyPath(parentName + "." + name, newValue);
       });
     });
@@ -166,6 +166,20 @@ abstract class HasChildrenReflectiveMixin implements HasChildrenMixin {
     _sub = observe(_target);
   }
 
+  findDartTarget(String name) {
+    List<String> p = name.split(".");
+    String last =p.removeLast();
+    String before = p.join(".");
+    var tgt;
+    if (p.length>0) {
+      tgt = _element.get(before);
+    } else {
+      tgt = _element;
+    }
+    return tgt;
+  }
+
+
   StreamSubscription observe(Observable target) {
     // Attach listener too
     return target.changes.listen((List<ChangeRecord> recs) {
@@ -174,6 +188,8 @@ abstract class HasChildrenReflectiveMixin implements HasChildrenMixin {
           .forEach((PropertyChangeRecord pcr) {
         String name = symbolToName(pcr.name);
         var val = pcr.newValue;
+
+        new ChangeVersion(target).version++;
         notifyPath(name, val);
 
         // Replace observer
@@ -208,21 +224,36 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
     init(_element);
   }
 
+
   bool notifyPath(String name, newValue) {
     if (_logger.isLoggable(Level.FINE)) {
       _logger.fine("${_element} NOTIFY ${name} with ${newValue}");
     }
-    try {
+    // Sync'em
+/*
+    var tgt = findDartTarget(name);
+
+    var js = jsValue(tgt);
+    ChangeVersion jsVersion = new ChangeVersion(js);
+    ChangeVersion dartVersion = new ChangeVersion(tgt);
+    // Sync'em
+    if (jsVersion.version == dartVersion.version)
+      return;
+
+    jsVersion.version=dartVersion.version;
+
+*/
+      try {
       polymerDartSyncDisabled = true;
-      return _element.notifyPath(name, newValue);
+      return _element.set(name, newValue);
     } finally {
-      polymerDartSyncDisabled =false;
+     polymerDartSyncDisabled =false;
     }
 
   }
 
   notifySplice(List array, String path, int index, int added, List removed) {
-    JsArray js = jsValue(_element.get(path));
+    JsArray js = jsValue(array);
     ChangeVersion jsVersion = new ChangeVersion(js);
     ChangeVersion dartVersion = new ChangeVersion(array);
     // Sync'em
@@ -239,8 +270,7 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
         polymerDartSyncDisabled = true;
 
         _element.jsElement.callMethod("splice", [path, index, removed.length]
-          ..addAll(
-            array.sublist(index, index + added).map((x) => jsValue(x))));
+          ..addAll(array.sublist(index, index + added).map((x) => jsValue(x))));
       } finally {
         polymerDartSyncDisabled = false;
       }
