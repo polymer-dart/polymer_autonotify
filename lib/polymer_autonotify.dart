@@ -269,8 +269,11 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
       try {
         polymerDartSyncDisabled = true;
 
-        _element.jsElement.callMethod("splice", [path, index, removed.length]
-          ..addAll(array.sublist(index, index + added).map((x) => jsValue(x))));
+        _element.removeRange(path,index,index+removed.length);
+        _element.insertAll(path,index,(array.sublist(index, index + added)));
+
+        //_element.jsElement.callMethod("splice", [path, index, removed.length]
+        //  ..addAll(array.sublist(index, index + added).map((x) => jsValue(x))));
       } finally {
         polymerDartSyncDisabled = false;
       }
