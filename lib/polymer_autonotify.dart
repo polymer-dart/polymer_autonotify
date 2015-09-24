@@ -183,12 +183,13 @@ abstract class HasChildrenReflectiveMixin implements HasChildrenMixin {
   StreamSubscription observe(Observable target) {
     // Attach listener too
     return target.changes.listen((List<ChangeRecord> recs) {
-      recs
-          .where((ChangeRecord cr) => cr is PropertyChangeRecord)
-          .forEach((PropertyChangeRecord pcr) {
-        String name = symbolToName(pcr.name);
-        var val = pcr.newValue;
 
+      Map newValues = {};
+      recs.where((ChangeRecord cr) => cr is PropertyChangeRecord)
+      .forEach((PropertyChangeRecord pcr) => newValues[pcr.name] = pcr.newValue);
+
+      newValues.forEach((Symbol sym, val) {
+        String name=symbolToName(sym);
         new ChangeVersion(target).version++;
         notifyPath(name, val);
 
@@ -200,11 +201,14 @@ abstract class HasChildrenReflectiveMixin implements HasChildrenMixin {
 
         child = new PropertyNotifier.from(val);
         if (child != null) {
-          subNodes[name] = child..addReference(name, this);
+          subNodes[name] = child
+            ..addReference(name, this);
         }
       });
+
     });
   }
+
 
   void cleanUpListener() {
     _sub.cancel();
