@@ -255,9 +255,16 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
   }
 
   notifySplice(List array, String path, int index, int added, List removed) {
+
     JsArray js = jsValue(array);
     ChangeVersion jsVersion = new ChangeVersion(js);
     ChangeVersion dartVersion = new ChangeVersion(array);
+    if (_element.jsElement["__DISABLE_SYNC__"]==-1) {
+      _logger.fine("Not updating array because coming from js");
+      jsVersion.version=dartVersion.version;
+      _element.jsElement["__DISABLE_SYNC__"]=0;
+      return;
+    }
     // Sync'em
     if (jsVersion.version != dartVersion.version) {
       if (_logger.isLoggable(Level.FINE)) {
