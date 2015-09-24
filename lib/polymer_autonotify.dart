@@ -125,7 +125,7 @@ abstract class HasParentMixin implements PropertyNotifier {
 
   bool notifyPath(String name, newValue) {
     parents.forEach((String parentName, List<PropertyNotifier> parents1) {
-      parents1.sublist(0,1).forEach((PropertyNotifier parent) {
+      parents1.forEach((PropertyNotifier parent) {
         parent.notifyPath(parentName + "." + name, newValue);
       });
     });
@@ -244,10 +244,12 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
 
 */
       try {
-      polymerDartSyncDisabled = true;
-      return _element.set(name, newValue);
+      //polymerDartSyncDisabled = true;
+        //_element.jsElement["__DISABLE_SYNC__"]=1;
+      return _element.set(name, newValue,disableSync:true);
     } finally {
-     polymerDartSyncDisabled =false;
+     //polymerDartSyncDisabled =false;
+        //_element.jsElement["__DISABLE_SYNC__"]=0;
     }
 
   }
@@ -267,15 +269,16 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
       _logger.fine("INITIAL:${js}");
 
       try {
-        polymerDartSyncDisabled = true;
-
-        _element.removeRange(path,index,index+removed.length);
-        _element.insertAll(path,index,(array.sublist(index, index + added)));
+        //polymerDartSyncDisabled = true;
+        //_element.jsElement["__DISABLE_SYNC__"]=1;
+        _element.removeRange(path,index,index+removed.length,disableSync:true);
+        _element.insertAll(path,index,(array.sublist(index, index + added)),disableSync:true);
 
         //_element.jsElement.callMethod("splice", [path, index, removed.length]
         //  ..addAll(array.sublist(index, index + added).map((x) => jsValue(x))));
       } finally {
-        polymerDartSyncDisabled = false;
+        //polymerDartSyncDisabled = false;
+        //_element.jsElement["__DISABLE_SYNC__"]=0;
       }
 
       // Try with notify splices only
