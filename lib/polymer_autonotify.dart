@@ -243,19 +243,17 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
 
     // Sync'em
     if (jsVersion.version != dartVersion.version) {
-      if (_logger.isLoggable(Level.FINE)) {
-        _logger.fine(
-            "${_element} MODIFY JS ARRAY ${jsVersion.version} != ${dartVersion.version} : ${path} at ${index}, added ${added} , removed ${removed.length}");
-      }
+
       jsVersion.version = dartVersion.version;
 
       try {
-        DartAutonotifyJS["comingFromDart"] = true;
+        DartAutonotifyJS["ignoreNextSplice"] = true;
         js.callMethod("splice",[index,removed.length]..addAll(array.sublist(index,index+added).map(convertToJs)));
         _element.jsElement.callMethod("_notifySplice",[js,path,index,added,removed.map(convertToJs).toList()]);
 
       } finally {
-        DartAutonotifyJS["comingFromDart"] = false;
+        // just in case something weird happens ..
+        DartAutonotifyJS["ignoreNextSplice"] = false;
       }
 
     }
@@ -320,10 +318,14 @@ class ListPropertyNotifier extends PropertyNotifier
         // Notify splice
         rc.forEach((ListChangeRecord lc) {
           // Avoid loops when splicing jsArray
-          new ChangeVersion(_target).version++;
+          var js = convertToJs(target);
+          if (js["__UPDATED_FROM_JS__"]) {
+            js["__UPDATED_FROM_JS__"] = false;
+          } else {
+            new ChangeVersion(_target).version++;
 
-          notifySplice(_target, null, lc.index, lc.addedCount, lc.removed);
-
+            notifySplice(_target, null, lc.index, lc.addedCount, lc.removed);
+          }
           // Adjust references
 
           // Fix observers

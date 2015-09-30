@@ -1,24 +1,65 @@
-<!--
-Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
-for details. All rights reserved. Use of this source code is governed by a
-BSD-style license that can be found in the LICENSE file.
--->
 <script>
-  (function() {
+    (function () {
 
-    var orig_propertyChanged =   Polymer.Dart.InteropBehavior._propertyChanged;
-    Polymer.Dart.InteropBehavior._propertyChanged = function(){};
-    Polymer.Dart.AutoNotify = {
-      comingFromDart: false,
-      Behavior: {
-        _propertyChanged: function(path, newValue, oldValue) {
-          if (Polymer.Dart.AutoNotify.comingFromDart) {
-            newValue._applied = true;
-          }
-          orig_propertyChanged.call(
-              this, path, newValue, oldValue);
-        }
-      }
-    };
-  })();
+        var orig_propertyChanged = Polymer.Dart.InteropBehavior._propertyChanged;
+        Polymer.Dart.InteropBehavior._propertyChanged = function () {
+        };
+        Polymer.Dart.AutoNotify = {
+            ignoreNextSplice: false,
+            Behavior: {
+
+                _resolveModel: function(path) {
+                    var parts = this._getPathParts(path);
+                    var array;
+
+                    // Get the model which is being updated.
+                    var thisArg = this;
+                    for (var i = 0; i < parts.length - 1; i++) {
+                        var part = parts[i];
+
+                        if (array && (parseInt(part) == part)) {
+                            thisArg = Polymer.Collection.get(array).getItem(part);
+                        } else {
+                            thisArg = thisArg[part];
+                        }
+
+                        if (!thisArg) {
+                            return;
+                        }
+                        array = Array.isArray(thisArg) ? thisArg : null;
+                    }
+
+                    // The property of the model which is being updated.
+                    var prop = parts[parts.length - 1];
+                    if (array && (parseInt(prop) == prop)) {
+                        // Ouch, O(n) operation :(. Also doesn't support duplicates :(.
+                        prop = array.indexOf(Polymer.Collection.get(array).getItem(prop));
+                    }
+
+                    // Grab the __dartClass__ if we already have one
+                    thisArg = thisArg.__dartClass__ || thisArg;
+                    return thisArg;
+                },
+
+                _propertyChanged: function (path, newValue, oldValue) {
+                    console.log("CH"+path+" = "+newValue);
+                    if (path.indexOf(".splices",path.length-8) == path.length - 8) {
+                        if (Polymer.Dart.AutoNotify.ignoreNextSplice) {
+                            newValue._applied = true;
+                            Polymer.Dart.AutoNotify.ignoreNextSplice = false;
+                        } else {
+                            _resolveModel(path)["__UPDATED_FROM_JS__"]=true;
+                        }
+                    }
+                    orig_propertyChanged.call(
+                            this, path, newValue, oldValue);
+                },
+
+                notifyPath: function(path,newValue,fromAbove) {
+                    console.log("NOTIF");
+                    return Polymer.Base.notifyPath.call(this,path,newValue,fromAbove);
+                }
+            }
+        };
+    })();
 </script>
