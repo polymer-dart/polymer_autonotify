@@ -12,7 +12,20 @@ import "package:polymer/init.dart" show polymerDartSyncDisabled;
 
 Logger _logger = new Logger("autonotify.support");
 
-final JsObject DartAutonotifyJS = context["Polymer"]["Dart"]["AutoNotify"];
+
+init(JsObject DartAutonotifyJS) {
+  DartAutonotifyJS["updateJsVersion"] = (js) {
+    List dart = convertToDart(js);
+    ChangeVersion jsChange = new ChangeVersion(js);
+    ChangeVersion dartChange = new ChangeVersion(dart);
+    jsChange.version=dartChange.version+1;
+  };
+
+  return DartAutonotifyJS;
+}
+
+final JsObject DartAutonotifyJS = init(context["Polymer"]["Dart"]["AutoNotify"]);
+
 
 abstract class PropertyNotifier {
   static final Expando<PropertyNotifier> _notifiersCache = new Expando();
@@ -318,14 +331,9 @@ class ListPropertyNotifier extends PropertyNotifier
         // Notify splice
         rc.forEach((ListChangeRecord lc) {
           // Avoid loops when splicing jsArray
-          var js = convertToJs(target);
-          if (js["__UPDATED_FROM_JS__"]) {
-            js["__UPDATED_FROM_JS__"] = false;
-          } else {
-            new ChangeVersion(_target).version++;
+          new ChangeVersion(_target).version++;
 
-            notifySplice(_target, null, lc.index, lc.addedCount, lc.removed);
-          }
+          notifySplice(_target, null, lc.index, lc.addedCount, lc.removed);
           // Adjust references
 
           // Fix observers

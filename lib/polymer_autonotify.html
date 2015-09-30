@@ -6,6 +6,9 @@
         };
         Polymer.Dart.AutoNotify = {
             ignoreNextSplice: false,
+            updateJsVersion: function() {
+              // Placeholder for readability : real one defined in dart
+            },
             Behavior: {
 
                 _resolveModel: function(path) {
@@ -48,7 +51,7 @@
                             newValue._applied = true;
                             Polymer.Dart.AutoNotify.ignoreNextSplice = false;
                         } else {
-                            _resolveModel(path)["__UPDATED_FROM_JS__"]=true;
+                            Polymer.Dart.AutoNotify.updateJsVersion(_resolveModel(path));
                         }
                     }
                     orig_propertyChanged.call(
