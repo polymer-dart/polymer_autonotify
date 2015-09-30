@@ -6,100 +6,20 @@ BSD-style license that can be found in the LICENSE file.
 <script>
     (function() {
 
-        Polymer.DartAutoNotify = {};
+        Polymer.DartAutoNotify = {
+            comingFromDart:false
+        };
 
         //console.log("Interop was : "+Polymer.Dart.InteropBehavior+" Will be replaced ");
         // REPLACING ORIGINAL INTEROP BEHAVIOR
-        Polymer.Dart.InteropBehavior = {
-            // Property
 
-            _resolvePathModel:function(path) {
-                var prop = this;
-                var parts = path.split(".");
-                var array;
-                var last = parts[parts.length-1];
-                if (parts.length > 1) {
-                    for (var i=0; i<parts.length-1; i++) {
-                        var part = parts[i];
-                        if (array && (parseInt(part) == part)) {
-                            prop = Polymer.Collection.getItem(part);
-                        } else {
-                            prop=prop[part];
-                        }
-                        if (!prop) {
-                            return;
-                        }
-                        array = Array.isArray(prop) ? prop : null;
-                    }
-                    if (array && (parseInt(last) == last)) {
-                        var coll = Polymer.Collection.get(array);
-                        var old = prop[last];
-                        var key = coll.getKey(old);
-                        parts[i] = key;
-                        coll.setItem(key, value);
-                    }
-                    prop[last] = value;
-
-                }
-            },
-
-            _propertyChanged: function(path, newValue, oldValue) {
-                if (newValue===oldValue) {
-                    return;
-                }
-                // Update only the first level (props of poylmer elements)
-                // for deeper levels accessors will do their work (unless it is an array ... )
-                // (Until polymer bug get fixed and we can resolve paths
-                var parts = path.split('.');
-                if (parts.length==1) {
-                    var thisArg = this;
-                    //thisArg = thisArg.__dartClass__ || thisArg;
-                    Polymer.Dart.propertyChanged(
-                            thisArg, parts[0], newValue);
-                }
-
-
-            },
-
-            // REMOVED notifyPath from orig Behavior.
-
-            notifyRawPath: function(path,value,fromAbove) {
-                //console.log("This is notifyRawPath for:"+path);
-
-                // Need to translate from rawPath to notifyPath (see polymer Set Method)
-                var prop = this;
-                var parts = path.split(".");
-                var array;
-                var last = parts[parts.length-1];
-                if (parts.length > 1) {
-                    for (var i=0; i<parts.length; i++) {
-                        var part = parts[i];
-                        prop = prop[part];
-                        if (array && (parseInt(part) == part)) {
-                            parts[i] = Polymer.Collection.get(array).getKey(prop);
-                        }
-                        if (!prop) {
-                            return;
-                        }
-                        array = Array.isArray(prop) ? prop : null;
-                    }
-
-
-                }
-
-                var P = parts.join('.');
-                //console.log("Translated P "+P);
-                return this.notifyPath(P, value);
-
-                //return Polymer.Base.notifyPath.call(this, path, value, fromAbove);
-            },
-
-            // Just leave deserialize
-            serialize: function(value, type) {
-                return Polymer.Dart.serialize(value, type);
+        var origPropertyChanged=Polymer.Dart.InteropBehavior._propertyChanged;
+        Polymer.Dart.InteropBehavior._propertyChanged= function(path, newValue, oldValue) {
+            if (Polymer.DartAutoNotify.comingFromDart) {
+                return;
             }
+            return origPropertyChanged.call(this,path,newValue,oldValue);
         };
 
-        //console.log("Interop is : "+Polymer.Dart.InteropBehavior+" has been replaced ");
     })();
 </script>

@@ -12,6 +12,8 @@ import "package:polymer/init.dart" show polymerDartSyncDisabled;
 
 Logger _logger = new Logger("autonotify.support");
 
+final JsObject DartAutonotifyJS = context["Polymer"]["DartAutoNotify"];
+
 abstract class PropertyNotifier {
   static final Expando<PropertyNotifier> _notifiersCache = new Expando();
   static final Map _cycleDetection = {};
@@ -247,8 +249,15 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
       }
       jsVersion.version = dartVersion.version;
 
-      _element.removeRange(path, index, index + removed.length);
-      _element.insertAll(path, index, (array.sublist(index, index + added)));
+      try {
+        DartAutonotifyJS["comingFromDart"] = true;
+        js.callMethod("splice",[index,removed.length]..addAll(array.sublist(index,index+added).map(convertToJs)));
+        _element.jsElement.callMethod("_notifySplice",[js,path,index,added,removed.map(convertToJs).toList()]);
+
+      } finally {
+        DartAutonotifyJS["comingFromDart"] = false;
+      }
+
     }
   }
 
