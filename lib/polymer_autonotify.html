@@ -2,7 +2,13 @@
     (function () {
 
         var orig_propertyChanged = Polymer.Dart.InteropBehavior._propertyChanged;
-        Polymer.Dart.InteropBehavior._propertyChanged = function () {
+        Polymer.Dart.InteropBehavior._propertyChanged = function (path, newValue, oldValue) {
+            console.log("PCORIG1: "+path+"="+newValue);
+            if (this.isAutonotify) {
+                return;
+            }
+            console.log("PCORIG : "+path+" "+newValue);
+            orig_propertyChanged.call(this,path,newValue,oldValue);
         };
         Polymer.Dart.AutoNotify = {
             ignoreNextSplice: false,
@@ -46,6 +52,7 @@
 
                 _propertyChanged: function (path, newValue, oldValue) {
                     console.log("CH"+path+" = "+newValue);
+                    throw new Error("CIAO");
                     if (path.indexOf(".splices",path.length-8) == path.length - 8) {
                         if (Polymer.Dart.AutoNotify.ignoreNextSplice) {
                             newValue._applied = true;

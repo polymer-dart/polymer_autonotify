@@ -398,11 +398,12 @@ abstract class PolymerAutoNotifySupportJsBehavior {}
 
 @behavior
 abstract class PolymerAutoNotifySupportBehavior implements
-    PolymerAutoNotifySupportJsBehavior {
+    PolymerAutoNotifySupportJsBehavior,PolymerElement {
   PolymerElementPropertyNotifier _rootNotifier;
 
-  static void created(mixin) {
+  static void created(PolymerAutoNotifySupportBehavior mixin) {
     mixin._rootNotifier = new PropertyNotifier.from(mixin);
+    mixin.jsElement["isAutonotify"]=true;
   }
 
   static void detached(mixin) {
