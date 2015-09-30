@@ -13,18 +13,17 @@ import "package:polymer/init.dart" show polymerDartSyncDisabled;
 Logger _logger = new Logger("autonotify.support");
 
 
-init(JsObject DartAutonotifyJS) {
-  DartAutonotifyJS["updateJsVersion"] = (js) {
+final JsObject DartAutonotifyJS = () {
+  JsObject D = context["Polymer"]["Dart"]["AutoNotify"];
+  D["updateJsVersion"] = (js) {
     List dart = convertToDart(js);
     ChangeVersion jsChange = new ChangeVersion(js);
     ChangeVersion dartChange = new ChangeVersion(dart);
     jsChange.version=dartChange.version+1;
   };
 
-  return DartAutonotifyJS;
-}
-
-final JsObject DartAutonotifyJS = init(context["Polymer"]["Dart"]["AutoNotify"]);
+  return D;
+}();
 
 
 abstract class PropertyNotifier {
