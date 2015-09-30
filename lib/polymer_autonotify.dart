@@ -1,4 +1,4 @@
-@HtmlImport("polymer_autonotify.html")
+@HtmlImport('polymer_autonotify.html')
 library autonotify.support;
 
 import "package:polymer/polymer.dart";
@@ -247,7 +247,9 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
       }
       jsVersion.version = dartVersion.version;
 
+      context['Polymer']['Dart']['AutoNotify']['ignoreNextSplice'] = true;
       _element.removeRange(path, index, index + removed.length);
+      context['Polymer']['Dart']['AutoNotify']['ignoreNextSplice'] = true;
       _element.insertAll(path, index, (array.sublist(index, index + added)));
     }
   }
@@ -375,8 +377,12 @@ class ListPropertyNotifier extends PropertyNotifier
   }
 }
 
+@BehaviorProxy('Polymer.Dart.AutoNotify.Behavior')
+abstract class PolymerAutoNotifySupportJsBehavior {}
+
 @behavior
-abstract class PolymerAutoNotifySupportMixin {
+abstract class PolymerAutoNotifySupportBehavior implements
+    PolymerAutoNotifySupportJsBehavior {
   PolymerElementPropertyNotifier _rootNotifier;
 
   static void created(mixin) {
