@@ -248,11 +248,11 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
 
 */
       try {
-      //polymerDartSyncDisabled = true;
+      polymerDartSyncDisabled = true;
         //_element.jsElement["__DISABLE_SYNC__"]=1;
       return _element.set(name, newValue,disableSync:true);
     } finally {
-     //polymerDartSyncDisabled =false;
+       polymerDartSyncDisabled =false;
         //_element.jsElement["__DISABLE_SYNC__"]=0;
     }
 
@@ -260,8 +260,9 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
 
   notifySplice(List array, String path, int index, int added, List removed) {
 
-    JsArray js = jsValue(array);
+    JsArray js = convertToJs(array);
     ChangeVersion jsVersion = new ChangeVersion(js);
+    js["__MARKED__"]="MARKED_"+jsVersion.version.toString();
     ChangeVersion dartVersion = new ChangeVersion(array);
     if (_element.jsElement["__DISABLE_SYNC__"]==-1) {
       _logger.fine("Not updating array because coming from js");
@@ -280,7 +281,7 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
       _logger.fine("INITIAL:${js}");
 
       try {
-        //polymerDartSyncDisabled = true;
+        polymerDartSyncDisabled = true;
         //_element.jsElement["__DISABLE_SYNC__"]=1;
         _element.removeRange(path,index,index+removed.length,disableSync:true);
         _element.insertAll(path,index,(array.sublist(index, index + added)),disableSync:true);
@@ -288,7 +289,7 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
         //_element.jsElement.callMethod("splice", [path, index, removed.length]
         //  ..addAll(array.sublist(index, index + added).map((x) => jsValue(x))));
       } finally {
-        //polymerDartSyncDisabled = false;
+        polymerDartSyncDisabled = false;
         //_element.jsElement["__DISABLE_SYNC__"]=0;
       }
 
@@ -301,7 +302,7 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
           "splice",
           [index, removed.length]
             ..addAll(
-                array.sublist(index, index + added).map((x) => jsValue(x))));
+                array.sublist(index, index + added).map((x) => convertToJs(x))));
       _element.jsElement
           .callMethod('_notifySplice', [js, path, index, added, jsRemoved]);*/
       _logger.fine("INITIAL2:${js}");
@@ -318,7 +319,7 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
       }
       notifyVersion.version=dartVersion.version;
       _element.jsElement.callMethod(
-          '_notifySplice', [js, path, index, added, jsValue(removed)]);
+          '_notifySplice', [js, path, index, added, convertToJs(removed)]);
 
 
     }*/
