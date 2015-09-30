@@ -1,6 +1,8 @@
+@HtmlImport("polymer_autonotify.html")
 library autonotify.support;
 
 import "package:polymer/polymer.dart";
+import "package:web_components/web_components.dart" show HtmlImport;
 import "package:observe/observe.dart";
 import "package:smoke/smoke.dart";
 import "package:logging/logging.dart";
@@ -234,27 +236,8 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
       _logger.fine("${_element} NOTIFY ${name} with ${newValue}");
     }
     // Sync'em
-/*
-    var tgt = findDartTarget(name);
 
-    var js = jsValue(tgt);
-    ChangeVersion jsVersion = new ChangeVersion(js);
-    ChangeVersion dartVersion = new ChangeVersion(tgt);
-    // Sync'em
-    if (jsVersion.version == dartVersion.version)
-      return;
-
-    jsVersion.version=dartVersion.version;
-
-*/
-      try {
-      polymerDartSyncDisabled = true;
-        //_element.jsElement["__DISABLE_SYNC__"]=1;
-      return _element.set(name, newValue,disableSync:true);
-    } finally {
-       polymerDartSyncDisabled =false;
-        //_element.jsElement["__DISABLE_SYNC__"]=0;
-    }
+    return _element.set(name,newValue);
 
   }
 
@@ -262,14 +245,8 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
 
     JsArray js = convertToJs(array);
     ChangeVersion jsVersion = new ChangeVersion(js);
-    js["__MARKED__"]="MARKED_"+jsVersion.version.toString();
     ChangeVersion dartVersion = new ChangeVersion(array);
-    if (_element.jsElement["__DISABLE_SYNC__"]==-1) {
-      _logger.fine("Not updating array because coming from js");
-      jsVersion.version=dartVersion.version;
-      _element.jsElement["__DISABLE_SYNC__"]=0;
-      return;
-    }
+
     // Sync'em
     if (jsVersion.version != dartVersion.version) {
       if (_logger.isLoggable(Level.FINE)) {
@@ -278,51 +255,12 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
       }
       jsVersion.version = dartVersion.version;
 
-      _logger.fine("INITIAL:${js}");
 
-      try {
-        polymerDartSyncDisabled = true;
-        //_element.jsElement["__DISABLE_SYNC__"]=1;
-        _element.removeRange(path,index,index+removed.length,disableSync:true);
-        _element.insertAll(path,index,(array.sublist(index, index + added)),disableSync:true);
+      _element.removeRange(path,index,index+removed.length);
+      _element.insertAll(path,index,(array.sublist(index, index + added)));
 
-        //_element.jsElement.callMethod("splice", [path, index, removed.length]
-        //  ..addAll(array.sublist(index, index + added).map((x) => jsValue(x))));
-      } finally {
-        polymerDartSyncDisabled = false;
-        //_element.jsElement["__DISABLE_SYNC__"]=0;
-      }
 
-      // Try with notify splices only
-      JsObject splices = new JsObject.jsify({
-
-      });
-/*
-      var jsRemoved = js.callMethod(
-          "splice",
-          [index, removed.length]
-            ..addAll(
-                array.sublist(index, index + added).map((x) => convertToJs(x))));
-      _element.jsElement
-          .callMethod('_notifySplice', [js, path, index, added, jsRemoved]);*/
-      _logger.fine("INITIAL2:${js}");
-
-      _logger.fine("FINAL:${js}");
     }
-    /*
-    // Notify this splice only once per referencing element
-    ChangeVersion notifyVersion = new ChangeVersion(array,fromExpando:_notifyVersionTrackingExpando);
-    if (notifyVersion.version!=dartVersion.version) {
-      if (_logger.isLoggable(Level.FINE)) {
-        _logger.fine(
-            "${_element} NOTIFY SPLICE OF ${notifyVersion.version} != ${dartVersion.version} : ${path} at ${index}, added ${added} , removed ${removed.length}");
-      }
-      notifyVersion.version=dartVersion.version;
-      _element.jsElement.callMethod(
-          '_notifySplice', [js, path, index, added, convertToJs(removed)]);
-
-
-    }*/
   }
 
   void destroy() {
