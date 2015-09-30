@@ -9,6 +9,7 @@ BSD-style license that can be found in the LICENSE file.
         Polymer.DartAutoNotify = {};
 
         //console.log("Interop was : "+Polymer.Dart.InteropBehavior+" Will be replaced ");
+        // REPLACING ORIGINAL INTEROP BEHAVIOR
         Polymer.Dart.InteropBehavior = {
             // Property
 
@@ -19,13 +20,8 @@ BSD-style license that can be found in the LICENSE file.
 
                 var parts = path.split('.');
                 if (parts.length==1) {
-                    console.log("PCHANGE : "+path+" = "+newValue);
                     var thisArg = this;
                     //thisArg = thisArg.__dartClass__ || thisArg;
-                    if (parts[0]=="samples") {
-                       // return;
-                    }
-                    console.log("ThisARG : "+thisArg+" prop "+parts[0]+" VAL "+newValue);
                     Polymer.Dart.propertyChanged(
                             thisArg, parts[0], newValue);
                 } else {
@@ -38,7 +34,7 @@ BSD-style license that can be found in the LICENSE file.
             // REMOVED notifyPath from orig Behavior.
 
             notifyRawPath: function(path,value,fromAbove) {
-                console.log("This is notifyRawPath for:"+path);
+                //console.log("This is notifyRawPath for:"+path);
 
                 // Need to translate from rawPath to notifyPath (see polymer Set Method)
                 var prop = this;
