@@ -13,19 +13,49 @@ BSD-style license that can be found in the LICENSE file.
         Polymer.Dart.InteropBehavior = {
             // Property
 
+            _resolvePathModel:function(path) {
+                var prop = this;
+                var parts = path.split(".");
+                var array;
+                var last = parts[parts.length-1];
+                if (parts.length > 1) {
+                    for (var i=0; i<parts.length-1; i++) {
+                        var part = parts[i];
+                        if (array && (parseInt(part) == part)) {
+                            prop = Polymer.Collection.getItem(part);
+                        } else {
+                            prop=prop[part];
+                        }
+                        if (!prop) {
+                            return;
+                        }
+                        array = Array.isArray(prop) ? prop : null;
+                    }
+                    if (array && (parseInt(last) == last)) {
+                        var coll = Polymer.Collection.get(array);
+                        var old = prop[last];
+                        var key = coll.getKey(old);
+                        parts[i] = key;
+                        coll.setItem(key, value);
+                    }
+                    prop[last] = value;
+
+                }
+            },
+
             _propertyChanged: function(path, newValue, oldValue) {
                 if (newValue===oldValue) {
                     return;
                 }
-
+                // Update only the first level (props of poylmer elements)
+                // for deeper levels accessors will do their work (unless it is an array ... )
+                // (Until polymer bug get fixed and we can resolve paths
                 var parts = path.split('.');
                 if (parts.length==1) {
                     var thisArg = this;
                     //thisArg = thisArg.__dartClass__ || thisArg;
                     Polymer.Dart.propertyChanged(
                             thisArg, parts[0], newValue);
-                } else {
-                    this.notifyPath(path,newValue);
                 }
 
 
@@ -42,7 +72,7 @@ BSD-style license that can be found in the LICENSE file.
                 var array;
                 var last = parts[parts.length-1];
                 if (parts.length > 1) {
-                    for (var i=0; i<parts.length-1; i++) {
+                    for (var i=0; i<parts.length; i++) {
                         var part = parts[i];
                         prop = prop[part];
                         if (array && (parseInt(part) == part)) {
@@ -53,14 +83,7 @@ BSD-style license that can be found in the LICENSE file.
                         }
                         array = Array.isArray(prop) ? prop : null;
                     }
-                    if (array && (parseInt(last) == last)) {
-                        var coll = Polymer.Collection.get(array);
-                        var old = prop[last];
-                        var key = coll.getKey(old);
-                        parts[i] = key;
-                        coll.setItem(key, value);
-                    }
-                    //prop[last] = value;
+
 
                 }
 

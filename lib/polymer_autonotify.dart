@@ -325,7 +325,7 @@ class ListPropertyNotifier extends PropertyNotifier
             }
 
             // fix path on the rest
-            for (int i = lc.index; i < target.length; i++) {
+            for (int i = lc.index; i < target.length-lc.addedCount; i++) {
               String fromName = (i + lc.removed.length).toString();
               String toName = i.toString();
 
