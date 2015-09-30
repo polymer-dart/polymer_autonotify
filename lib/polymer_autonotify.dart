@@ -170,10 +170,10 @@ abstract class HasChildrenReflectiveMixin implements HasChildrenMixin {
 
   findDartTarget(String name) {
     List<String> p = name.split(".");
-    String last =p.removeLast();
+    String last = p.removeLast();
     String before = p.join(".");
     var tgt;
-    if (p.length>0) {
+    if (p.length > 0) {
       tgt = _element.get(before);
     } else {
       tgt = _element;
@@ -181,17 +181,15 @@ abstract class HasChildrenReflectiveMixin implements HasChildrenMixin {
     return tgt;
   }
 
-
   StreamSubscription observe(Observable target) {
     // Attach listener too
     return target.changes.listen((List<ChangeRecord> recs) {
-
       Map newValues = {};
-      recs.where((ChangeRecord cr) => cr is PropertyChangeRecord)
-      .forEach((PropertyChangeRecord pcr) => newValues[pcr.name] = pcr.newValue);
+      recs.where((ChangeRecord cr) => cr is PropertyChangeRecord).forEach(
+          (PropertyChangeRecord pcr) => newValues[pcr.name] = pcr.newValue);
 
       newValues.forEach((Symbol sym, val) {
-        String name=symbolToName(sym);
+        String name = symbolToName(sym);
         new ChangeVersion(target).version++;
         notifyPath(name, val);
 
@@ -203,14 +201,11 @@ abstract class HasChildrenReflectiveMixin implements HasChildrenMixin {
 
         child = new PropertyNotifier.from(val);
         if (child != null) {
-          subNodes[name] = child
-            ..addReference(name, this);
+          subNodes[name] = child..addReference(name, this);
         }
       });
-
     });
   }
-
 
   void cleanUpListener() {
     _sub.cancel();
@@ -230,19 +225,16 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
     init(_element);
   }
 
-
   bool notifyPath(String name, newValue) {
     if (_logger.isLoggable(Level.FINE)) {
       _logger.fine("${_element} NOTIFY ${name} with ${newValue}");
     }
     // Sync'em
 
-    return _element.set(name,newValue);
-
+    return _element.set(name, newValue);
   }
 
   notifySplice(List array, String path, int index, int added, List removed) {
-
     JsArray js = convertToJs(array);
     ChangeVersion jsVersion = new ChangeVersion(js);
     ChangeVersion dartVersion = new ChangeVersion(array);
@@ -255,11 +247,8 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
       }
       jsVersion.version = dartVersion.version;
 
-
-      _element.removeRange(path,index,index+removed.length);
-      _element.insertAll(path,index,(array.sublist(index, index + added)));
-
-
+      _element.removeRange(path, index, index + removed.length);
+      _element.insertAll(path, index, (array.sublist(index, index + added)));
     }
   }
 
