@@ -3,16 +3,15 @@
 
         var orig_propertyChanged = Polymer.Dart.InteropBehavior._propertyChanged;
         Polymer.Dart.InteropBehavior._propertyChanged = function (path, newValue, oldValue) {
-            console.log("PCORIG1: "+path+"="+newValue);
             if (this.isAutonotify) {
+                Polymer.Dart.AutoNotify.Behavior._propertyChanged.call(this,path,newValue,oldValue);
                 return;
             }
-            console.log("PCORIG : "+path+" "+newValue);
             orig_propertyChanged.call(this,path,newValue,oldValue);
         };
         Polymer.Dart.AutoNotify = {
             ignoreNextSplice: false,
-            updateJsVersion: function() {
+            updateJsVersion: function(js) {
               // Placeholder for readability : real one defined in dart
             },
             Behavior: {
@@ -51,23 +50,15 @@
                 },
 
                 _propertyChanged: function (path, newValue, oldValue) {
-                    console.log("CH"+path+" = "+newValue);
-                    throw new Error("CIAO");
                     if (path.indexOf(".splices",path.length-8) == path.length - 8) {
                         if (Polymer.Dart.AutoNotify.ignoreNextSplice) {
                             newValue._applied = true;
-                            Polymer.Dart.AutoNotify.ignoreNextSplice = false;
                         } else {
-                            Polymer.Dart.AutoNotify.updateJsVersion(_resolveModel(path));
+                            Polymer.Dart.AutoNotify.updateJsVersion(Polymer.Dart.AutoNotify.Behavior._resolveModel.call(this,path));
                         }
                     }
                     orig_propertyChanged.call(
                             this, path, newValue, oldValue);
-                },
-
-                notifyPath: function(path,newValue,fromAbove) {
-                    console.log("NOTIF");
-                    return Polymer.Base.notifyPath.call(this,path,newValue,fromAbove);
                 }
             }
         };

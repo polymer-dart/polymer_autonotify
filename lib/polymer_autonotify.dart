@@ -14,15 +14,15 @@ Logger _logger = new Logger("autonotify.support");
 
 
 final JsObject DartAutonotifyJS = () {
-  JsObject D = context["Polymer"]["Dart"]["AutoNotify"];
-  D["updateJsVersion"] = (js) {
+  JsObject j = context["Polymer"]["Dart"]["AutoNotify"];
+  j["updateJsVersion"] = (js) {
     List dart = convertToDart(js);
     ChangeVersion jsChange = new ChangeVersion(js);
     ChangeVersion dartChange = new ChangeVersion(dart);
     jsChange.version=dartChange.version+1;
   };
 
-  return D;
+  return j;
 }();
 
 
