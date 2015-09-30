@@ -4,22 +4,21 @@ for details. All rights reserved. Use of this source code is governed by a
 BSD-style license that can be found in the LICENSE file.
 -->
 <script>
-    (function() {
+  (function() {
 
-        Polymer.DartAutoNotify = {
-            comingFromDart:false
-        };
-
-        //console.log("Interop was : "+Polymer.Dart.InteropBehavior+" Will be replaced ");
-        // REPLACING ORIGINAL INTEROP BEHAVIOR
-
-        var origPropertyChanged=Polymer.Dart.InteropBehavior._propertyChanged;
-        Polymer.Dart.InteropBehavior._propertyChanged= function(path, newValue, oldValue) {
-            if (Polymer.DartAutoNotify.comingFromDart) {
-                return;
-            }
-            return origPropertyChanged.call(this,path,newValue,oldValue);
-        };
-
-    })();
+    var orig_propertyChanged =   Polymer.Dart.InteropBehavior._propertyChanged;
+    Polymer.Dart.InteropBehavior._propertyChanged = function(){};
+    Polymer.Dart.AutoNotify = {
+      comingFromDart: false,
+      Behavior: {
+        _propertyChanged: function(path, newValue, oldValue) {
+          if (Polymer.Dart.AutoNotify.comingFromDart) {
+            newValue._applied = true;
+          }
+          orig_propertyChanged.call(
+              this, path, newValue, oldValue);
+        }
+      }
+    };
+  })();
 </script>

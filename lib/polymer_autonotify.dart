@@ -1,4 +1,4 @@
-@HtmlImport("polymer_autonotify.html")
+@HtmlImport('polymer_autonotify.html')
 library autonotify.support;
 
 import "package:polymer/polymer.dart";
@@ -12,7 +12,7 @@ import "package:polymer/init.dart" show polymerDartSyncDisabled;
 
 Logger _logger = new Logger("autonotify.support");
 
-final JsObject DartAutonotifyJS = context["Polymer"]["DartAutoNotify"];
+final JsObject DartAutonotifyJS = context["Polymer"]["Dart"]["AutoNotify"];
 
 abstract class PropertyNotifier {
   static final Expando<PropertyNotifier> _notifiersCache = new Expando();
@@ -384,8 +384,12 @@ class ListPropertyNotifier extends PropertyNotifier
   }
 }
 
+@BehaviorProxy('Polymer.Dart.AutoNotify.Behavior')
+abstract class PolymerAutoNotifySupportJsBehavior {}
+
 @behavior
-abstract class PolymerAutoNotifySupportMixin {
+abstract class PolymerAutoNotifySupportBehavior implements
+    PolymerAutoNotifySupportJsBehavior {
   PolymerElementPropertyNotifier _rootNotifier;
 
   static void created(mixin) {

@@ -59,7 +59,7 @@ class AutoNotifierTransformer extends Transformer with ResolverTransformer {
       classes
           .where((ClassElement clazz) => (clazz.allSupertypes.any((InterfaceType it) =>
                   it.name == "Observable" || it.name == "ChangeNotifier")) &&
-              (clazz.mixins.any((InterfaceType it) => it.name == "PolymerAutoNotifySupportMixin") ||
+              (clazz.mixins.any((InterfaceType it) => it.name == "PolymerAutoNotifySupportBehavior") ||
                   clazz.fields.any((FieldElement fe) => fe.metadata.any(
                       (ElementAnnotation ea) =>
                           ea.element.name == "observable")) ||
