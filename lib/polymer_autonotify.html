@@ -2,13 +2,14 @@
     (function () {
 
         var orig_propertyChanged = Polymer.Dart.InteropBehavior._propertyChanged;
+        /*
         Polymer.Dart.InteropBehavior._propertyChanged = function (path, newValue, oldValue) {
             if (this.isAutonotify) {
-                Polymer.Dart.AutoNotify.Behavior._propertyChanged.call(this,path,newValue,oldValue);
                 return;
             }
             orig_propertyChanged.call(this,path,newValue,oldValue);
         };
+*/
         Polymer.Dart.AutoNotify = {
             ignoreNextSplice: false,
             updateJsVersion: function(js) {
@@ -54,10 +55,10 @@
                         if (Polymer.Dart.AutoNotify.ignoreNextSplice) {
                             newValue._applied = true;
                         } else {
-                            Polymer.Dart.AutoNotify.updateJsVersion(Polymer.Dart.AutoNotify.Behavior._resolveModel.call(this,path));
+                            Polymer.Dart.AutoNotify.updateJsVersion(this._resolveModel(path));
                         }
                     }
-                    orig_propertyChanged.call(
+                    Polymer.Dart.InteropBehavior._propertyChanged.call(
                             this, path, newValue, oldValue);
                 }
             }

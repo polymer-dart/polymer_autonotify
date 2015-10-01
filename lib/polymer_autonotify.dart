@@ -394,16 +394,16 @@ class ListPropertyNotifier extends PropertyNotifier
 }
 
 @BehaviorProxy('Polymer.Dart.AutoNotify.Behavior')
+@JsProxyReflectable
 abstract class PolymerAutoNotifySupportJsBehavior {}
 
 @behavior
 abstract class PolymerAutoNotifySupportBehavior implements
-    PolymerAutoNotifySupportJsBehavior,PolymerElement {
+    PolymerAutoNotifySupportJsBehavior {
   PolymerElementPropertyNotifier _rootNotifier;
 
   static void created(PolymerAutoNotifySupportBehavior mixin) {
     mixin._rootNotifier = new PropertyNotifier.from(mixin);
-    mixin.jsElement["isAutonotify"]=true;
   }
 
   static void detached(mixin) {
