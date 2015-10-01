@@ -245,7 +245,7 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
     }
     // Sync'em
 
-    return _element.set(name, newValue);
+    return _element.notifyPath(name, newValue);
   }
 
   notifySplice(List array, String path, int index, int added, List removed) {
@@ -394,7 +394,6 @@ class ListPropertyNotifier extends PropertyNotifier
 }
 
 @BehaviorProxy('Polymer.Dart.AutoNotify.Behavior')
-@JsProxyReflectable
 abstract class PolymerAutoNotifySupportJsBehavior {}
 
 @behavior
