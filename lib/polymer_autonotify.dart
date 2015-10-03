@@ -1,16 +1,15 @@
 @HtmlImport('polymer_autonotify.html')
-library autonotify.support;
+library draft.polymer.autonotify;
 
 import "package:polymer/polymer.dart";
 import "package:web_components/web_components.dart" show HtmlImport;
 import "package:observe/observe.dart";
-import "package:smoke/smoke.dart";
 import "package:logging/logging.dart";
 import "dart:async";
 import "dart:js";
-import "package:polymer/init.dart" show polymerDartSyncDisabled;
+import "package:reflectable/reflectable.dart";
 
-Logger _logger = new Logger("autonotify.support");
+Logger _logger = new Logger("draft.polymer.autonotify");
 
 
 final JsObject DartAutonotifyJS = () {
@@ -163,16 +162,11 @@ abstract class HasParentMixin implements PropertyNotifier {
 
 abstract class HasChildrenReflectiveMixin implements HasChildrenMixin {
   Map discoverChildren(target) {
-    List<Declaration> fields = query(
-        target.runtimeType,
-        new QueryOptions(
-            includeFields: true,
-            includeProperties: true,
-            includeInherited: false,
-            withAnnotations: [ObservableProperty]));
+    InstanceMirror im = jsProxyReflectable.reflect(target);
+    Iterable<DeclarationMirror> fields = im.type.declarations.values.where((DeclarationMirror dm) => ((dm is MethodMirror) && ((dm as MethodMirror).isGetter)) || (dm is VariableMirror));
     return new Map.fromIterable(fields,
-        key: (Declaration f) => symbolToName(f.name),
-        value: (Declaration f) => read(target, f.name));
+        key: (DeclarationMirror f) => f.simpleName,
+        value: (DeclarationMirror f) => im.invokeGetter(f.simpleName));
   }
 
   StreamSubscription _sub;
@@ -202,8 +196,8 @@ abstract class HasChildrenReflectiveMixin implements HasChildrenMixin {
       recs.where((ChangeRecord cr) => cr is PropertyChangeRecord).forEach(
           (PropertyChangeRecord pcr) => newValues[pcr.name] = pcr.newValue);
 
-      newValues.forEach((Symbol sym, val) {
-        String name = symbolToName(sym);
+      newValues.forEach((String sym, val) {
+        String name = sym;
         new ChangeVersion(target).version++;
         notifyPath(name, val);
 

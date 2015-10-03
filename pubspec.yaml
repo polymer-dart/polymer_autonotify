@@ -9,14 +9,35 @@ dependencies:
  polymer: ">=1.0.0 <2.0.0"
  observe: any
  barback: any
+ test: any
+ reflectable: ">=0.2.1"
+ web_components: '>=0.11.3 <0.13.0'
+
+#transformers:
+#- web_components:
+#   entry_points:
+#    - test/autonotify_test.html
+#- test/pub_serve:
+#   $include: test/**_test{.*,}.dart
+#- observe:
+#   files:
+#    - test/autonotify_test.dart
+#- reflectable:
+#   entry_points:
+#    - test/autonotify_test.dart
+
+
 
 dependency_overrides:
+  observe:
+   path: ../observe
   polymer:
     git:
-      ref: 1.0.0-rc.1
+      ref: 1.0.0-rc.2
       url: https://github.com/dart-lang/polymer-dart.git
+  reflectable:
+   path: ../reflectable/reflectable
   polymer_interop:
     git:
       ref: 0.2.0-rc1
       url: https://github.com/dart-lang/polymer_interop.git
-
