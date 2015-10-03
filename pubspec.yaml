@@ -30,7 +30,9 @@ dependencies:
 
 dependency_overrides:
   observe:
-   path: ../observe
+   git:
+    ref: reflectable
+    url: https://github.com/dam0vm3nt/observe
   polymer:
     git:
       ref: 1.0.0-rc.2

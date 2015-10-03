@@ -7,9 +7,12 @@ use this import in the entry point (`index.dart`):
  import "package:smoke/mirrors.dart";
 ```
 and call `useMirrors()` in your main. In `PolymerElement` component add the mixins `PolymerAutoNotifySupportJsBehavior` and `PolymerAutoNotifySupportBehavior` and `Observable`.
-Annotate property with `@observable` (just like in the previous polymer version).
+Annotate property with `@observable` (just like in the previous polymer version). 
 
 Don't worry about mirrors as they will be used only when fast prototyping in Dartium. 
 When compiling in JS they will be replaced by a nice static configuration and imports
 will be removed by the transformer.
 
+## notes
+
+Last version works only with modified `observe` you can find [here](https://github.com/dam0vm3nt/observe/tree/reflectable), until the official one gets ported to reflectable or that branch gets merged.
