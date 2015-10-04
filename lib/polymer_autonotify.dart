@@ -235,9 +235,9 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
   }
 
   bool notifyPath(String name, newValue) {
-    if (_logger.isLoggable(Level.FINE)) {
-      _logger.fine("${_element} NOTIFY ${name} with ${newValue}");
-    }
+    //if (_logger.isLoggable(Level.FINE)) {
+    //  _logger.fine("${_element} NOTIFY ${name} with ${newValue}");
+    //}
     // Sync'em
 
     return _element.notifyPath(name, newValue);
