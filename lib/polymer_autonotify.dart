@@ -163,7 +163,8 @@ abstract class HasParentMixin implements PropertyNotifier {
 abstract class HasChildrenReflectiveMixin implements HasChildrenMixin {
   Map discoverChildren(target) {
     InstanceMirror im = jsProxyReflectable.reflect(target);
-    Iterable<DeclarationMirror> fields = im.type.declarations.values.where((DeclarationMirror dm) => ((dm is MethodMirror) && ((dm as MethodMirror).isGetter)) || (dm is VariableMirror));
+    Iterable<DeclarationMirror> fields = im.type.declarations.values.where((DeclarationMirror dm) => ((dm is MethodMirror) && ((dm as MethodMirror).isGetter)) || (dm is VariableMirror))
+      .where((DeclarationMirror dm) => dm.metadata.any((m) => m is ObservableProperty));
     return new Map.fromIterable(fields,
         key: (DeclarationMirror f) => f.simpleName,
         value: (DeclarationMirror f) => im.invokeGetter(f.simpleName));
