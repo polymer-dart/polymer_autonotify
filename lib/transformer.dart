@@ -109,6 +109,24 @@ TextEditTransaction _transformCompilationUnit(
     }
   }
 
+
+  // TODO(dam0vm3nt) Ad import to polymer if there is not yet
+  // add import of polymer with prefix and change the code to use that prefix
+  // show only reflectable and JsProxy
+  int pos =unit.offset;
+  ImportDirective first = unit.directives.firstWhere((x) => x is ImportDirective,orElse:()=>null);
+  if (first!=null) {
+    pos=first.offset;
+  }
+/*
+  bool hasAlreadyPolymer = unit.directives.any((x) => (x is ImportDirective) && (x as ImportDirective).uri.toString().contains("polymer/polymer.dart"));
+
+  if (!hasAlreadyPolymer&&(first!=null||!unit.directives.any((x) => x is PartOfDirective))) {
+    // Check if this is a part ..
+    code.edit(pos, pos, "import 'package:polymer/polymer.dart';");
+
+  }
+*/
   for (var declaration in unit.declarations) {
     if (declaration is ClassDeclaration) {
       _transformClass(declaration, code, sourceFile, logger);
@@ -152,6 +170,7 @@ void _transformClass(ClassDeclaration cls, TextEditTransaction code,
   if (_hasObservable(cls)) {
     logger.warning(NO_OBSERVABLE_ON_CLASS, span: _getSpan(file, cls));
   }
+
 
   // We'd like to track whether observable was declared explicitly, otherwise
   // report a warning later below. Because we don't have type analysis (only
