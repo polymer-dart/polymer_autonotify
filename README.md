@@ -9,10 +9,12 @@ Annotate property with `@observable` (just like in the previous polymer version)
 
 Last version works only with modified `observe` you can find [here](https://github.com/dam0vm3nt/observe/tree/reflectable), until the official one gets ported to reflectable or that branch gets merged.
 
-## using the transformer (optional)
+## using the transformer (optional but recommended)
 
-Because `observe` (modified) and `polymer-dart` use different mirror systems to make an object usable by polymer and with autonotify you have to annotate it twice (and make
-it mixin/extend both `JsProxy` AND `Obserable`). For example:
+Because `observe` (the modified one to use `reflectable`) and `polymer-dart` use different mirror systems to make an object usable both by polymer and autonotify you will have to annotate it twice (and make it mixin/extend both `JsProxy` AND `Obserable`). 
+
+For example:
+
 ```dart
 
 class ThatBeautifulModelOfMine extends Observable with JsProxy {
@@ -21,9 +23,10 @@ class ThatBeautifulModelOfMine extends Observable with JsProxy {
 }
 ```
 
-This can be annoying. So `polymer_autonotify` will come with a nice transformer that should be run *before* `observe` transformer that will add `polymer-dart` mixin and annotations for you on object already annotated for `observe`. 
+This can be annoying. Expecially if you have many of those classes around that were already annotated for `observe`. 
+But don't worry! `polymer_autonotify` will come in help with a nice transformer that should be run *before* `observe` transformer and that will add `polymer-dart` mixin and annotations for you on object already prepared for `observe`. 
 
-This way previous users of `observe` (that already have their object annotated for it) will have nothing to change to use their code with `polymer-dart` and `polymer-autonotify`.
+This way previous users of `observe` (that already have their object annotated for it) will have nothing to change to use their code with the new `polymer-dart` and `polymer-autonotify`.
 
 In the example before one should only write:
 ```dart
@@ -33,3 +36,21 @@ class TheBeautifulModelOfMine extends Observable {
  @observable String field2;
 }
 ```
+
+If you want to use it your main `pubspec.yaml` should appear like this :
+```yaml
+...
+
+
+- web_components:
+    entry_points:
+    - web/index.html
+- polymer_autonotify
+- observe
+- reflectable:
+    entry_points:
+    - web/index.dart
+
+...
+```
+`observe` and `polymer_autonotify` transformer should also be placed in all your imported packages that exports `polymer` your custom components using `autonotify` and exporting models.
