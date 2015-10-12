@@ -8,6 +8,7 @@ import "package:logging/logging.dart";
 import "dart:async";
 import "dart:js";
 import "package:reflectable/reflectable.dart";
+export "package:polymer_autonotify/polymer_observe_bridge.dart";
 
 Logger _logger = new Logger("draft.polymer.autonotify");
 
