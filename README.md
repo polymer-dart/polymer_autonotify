@@ -11,7 +11,9 @@ Last version works only with modified `observe` you can find [here](https://gith
 
 ## using the transformer (optional but recommended)
 
-Because `observe` (the modified one to use `reflectable`) and `polymer-dart` use different mirror systems to make an object usable both by polymer and autonotify you will have to annotate it twice (and make it mixin/extend both `JsProxy` AND `Obserable`). 
+Because `observe` transformer (the modified one to use `reflectable`) use `@observe` annotation to mark properties to be transformed and require a `ChangeNotifier` mixin 
+while `polymer-dart` mirror system wants properties to be annotated by `@reflectable` and object to mixin `JsProxy` even though
+a unique mirror system is used between `observe` and `polymer-dart` it is required to annotate a class twice (and make it mixin/extend both `JsProxy` AND `Obserable`). 
 
 For example:
 
@@ -24,7 +26,7 @@ class ThatBeautifulModelOfMine extends Observable with JsProxy {
 ```
 
 This can be annoying. Expecially if you have many of those classes around that were already annotated for `observe`. 
-But don't worry! `polymer_autonotify` will come in help with a nice transformer that should be run *before* `observe` transformer and that will add `polymer-dart` mixin and annotations for you on object already prepared for `observe`. 
+But don't worry! `polymer_autonotify` come in handy with a nice transformer that should be run *before* `observe` transformer and that will add `polymer-dart` mixin and annotations for you on object already prepared for `observe`. 
 
 This way previous users of `observe` (that already have their object annotated for it) will have nothing to change to use their code with the new `polymer-dart` and `polymer-autonotify`.
 
