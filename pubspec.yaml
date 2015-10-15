@@ -11,7 +11,7 @@ dependencies:
  barback: any
  test: any
  reflectable: ">=0.2.1"
- web_components: '>=0.11.3 <0.13.0'
+ web_components: '>=0.12.0'
 
 #transformers:
 #- web_components:
