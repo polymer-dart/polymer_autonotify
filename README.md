@@ -1,19 +1,39 @@
-# Auto notify support for (yet to be released) polymer 1.0
+# Auto notify support for (yet to be released) polymer-dart 1.0
+a.k.a. : get rid of all those fancy `set`, `add`, `remove`, etc. calls
 
-This package will add support for autonotify in polymer-dart 1.0.
-Just add the dependency and add the mixins `PolymerAutoNotifySupportJsBehavior` and `PolymerAutoNotifySupportBehavior` to your `PolymerElement`.
-Annotate property with `@observable` (just like in the previous polymer version). 
+
+## the problem 
+
+In `polymer` 1.0 you have to call a bunch of API (`set` and list accessor methods) on the polymer component whenever you have to apply a change on the model instead of changing the model directly. To make things worse if you have
+two or more independent components, for example two different views of the same model that are not inheriting the model one from the other by means of binding constructs (i.e. `{{ }}` or
+ `[[ ]]`), then you will have to call those API on each of component.
+ 
+Other then being very annoying this makes nearly impossible to follow consolidated patterns like MVC when building an app using vanilla polymer 1.0 : 
+infact the controller (C) should always interact directly with the view (V) to update the model (M).
+
+The opposite is true for `polymer` before 1.0 and that's one of the reason many appreciated that framework even though it was slower and less browser independent.
+
+## enters `autonotify`
+
+This package will add support for autonotify in polymer-dart 1.0, making it possible to write your code more or less in the same way you used to do with previous `polymer` version.
+
+You just have to annotate properties with `@observable` and extend/mixin the familiar `Observable` mixin, exactly like before, and `polymer_autnotify` will take care of calling `polymer` accessor API 
+ automatically for you.
+
+To enable the autonotify feature just add the dependency to your project and add the mixins `PolymerAutoNotifySupportJsBehavior` and `PolymerAutoNotifySupportBehavior` to your `PolymerElement` then 
+annotate property with `@observable` (just like in the previous polymer version). 
 
 
 ## notes
 
-Last version works only with modified `observe` you can find [here](https://github.com/dam0vm3nt/observe/tree/reflectable), until the official one gets ported to reflectable or that branch gets merged.
+Latest version of this library will not depend anymore on the old `smoke` mirroring system but requires a modified `observe` that you can find [here](https://github.com/dam0vm3nt/observe/tree/reflectable), 
+ until the official one gets ported to reflectable or that branch gets merged.
 
 ## using the transformer (optional but recommended)
 
-Because `observe` transformer (the modified one to use `reflectable`) use `@observe` annotation to mark properties to be transformed and require a `ChangeNotifier` mixin 
-while `polymer-dart` mirror system wants properties to be annotated by `@reflectable` and object to mixin `JsProxy` even though
-a unique mirror system is used between `observe` and `polymer-dart` it is required to annotate a class twice (and make it mixin/extend both `JsProxy` AND `Obserable`). 
+Because `observe` transformer (the modified one to use `reflectable`) uses `@observe` annotation to mark properties to be transformed and requires a `ChangeNotifier` mixin 
+while `polymer-dart` mirror system requires properties to be annotated by `@reflectable` and object to mixin `JsProxy` even though
+a unique mirror system is now being used between `observe` and `polymer-dart` it is required to annotate a class twice (and make it mixin/extend both `JsProxy` AND `Obserable`). 
 
 For example:
 
@@ -26,14 +46,14 @@ class ThatBeautifulModelOfMine extends Observable with JsProxy {
 ```
 
 This can be annoying. Expecially if you have many of those classes around that were already annotated for `observe`. 
-But don't worry! `polymer_autonotify` come in handy with a nice transformer that should be run *before* `observe` transformer and that will add `polymer-dart` mixin and annotations for you on object already prepared for `observe`. 
+But don't worry! `polymer_autonotify` come in handy with a nice transformer that have to be run *before* `observe` transformer and that will add `polymer-dart` mixin and annotations for you on object already prepared for `observe`. 
 
 This way previous users of `observe` (that already have their object annotated for it) will have nothing to change to use their code with the new `polymer-dart` and `polymer-autonotify`.
 
 In the example before one should only write:
 ```dart
 
-class TheBeautifulModelOfMine extends Observable {
+class ThatBeautifulModelOfMine extends Observable {
  @observable String field1;
  @observable String field2;
 }
