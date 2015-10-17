@@ -15,6 +15,9 @@
             updateJsVersion: function(js) {
               // Placeholder for readability : real one defined in dart
             },
+            collectNotified: function(el) {
+                // Placeholder for readability : real one defined in dart
+            },
             Behavior: {
 
                 _resolveModel: function(path) {
@@ -54,6 +57,8 @@
                     if (path.indexOf(".splices",path.length-8) == path.length - 8) {
                         if (Polymer.Dart.AutoNotify.ignoreNextSplice) {
                             newValue._applied = true;
+                            // Inform DART that polymer already notified that.
+                            Polymer.Dart.AutoNotify.collectNotified(this);
                         } else {
                             Polymer.Dart.AutoNotify.updateJsVersion(this._resolveModel(path));
                         }
