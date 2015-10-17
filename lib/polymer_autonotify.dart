@@ -18,7 +18,7 @@ SpliceData __CURRENT_SPLICE_DATA;
 final JsObject DartAutonotifyJS = () {
   JsObject j = context["Polymer"]["Dart"]["AutoNotify"];
   j["updateJsVersion"] = (js) {
-    List dart = convertToDart(js);
+    var dart = convertToDart(js);
     ChangeVersion jsChange = new ChangeVersion(js);
     ChangeVersion dartChange = new ChangeVersion(dart);
     jsChange.version=dartChange.version+1;
@@ -61,7 +61,7 @@ abstract class PropertyNotifier {
       n = _notifiersCache[target];
       if (n == null) {
         n = () {
-          if (target is PolymerElement) {
+          if (target is PolymerMixin) {
             return new PolymerElementPropertyNotifier(target);
           } else if (target is List || target is ObservableList) {
             return new ListPropertyNotifier(target);
@@ -251,10 +251,10 @@ class SpliceData {
 
 class PolymerElementPropertyNotifier extends PropertyNotifier
     with HasChildrenMixin, HasChildrenReflectiveMixin {
-  PolymerElement _element;
+  PolymerMixin _element;
   //Expando<ChangeVersion> _notifyVersionTrackingExpando = new Expando();
 
-  PolymerElementPropertyNotifier(PolymerElement element) {
+  PolymerElementPropertyNotifier(PolymerMixin element) {
     _element = element;
     if (!(element is Observable)) {
       throw "Using notifier on non observable Polymer";
