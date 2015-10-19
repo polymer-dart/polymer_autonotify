@@ -156,7 +156,7 @@ bool _isObservableAnnotation(Annotation node) =>
 
 bool _isNotPropertyAnnotation(Annotation node) =>
   !_isAnnotationContant(node,"property") &&
-  !_isAnnotationContant(node,"refletable") &&
+  !_isAnnotationContant(node,"reflectable") &&
   !_isAnnotationType(node,"Property") &&
   !_isAnnotationType(node,"PolymerReflectable");
 
@@ -191,8 +191,8 @@ void _transformClass(ClassDeclaration cls, TextEditTransaction code,
     for (var type in cls.withClause.mixinTypes) {
       var id = _getSimpleIdentifier(type.name);
       if (id.name == 'Observable') {
-        if (!_getSimpleIdentifier(cls.extendsClause.superclass.name)=='PolymerElement') {
-          code.edit(id.offset, id.end, 'Observable,JsProxy');
+        if (_getSimpleIdentifier(cls.extendsClause.superclass.name)!='PolymerElement') {
+          code.edit(id.offset, id.offset, 'JsProxy,');
         }
       } else if (id.name == 'ChangeNotifier') {
         break;
