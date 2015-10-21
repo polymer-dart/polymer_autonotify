@@ -213,7 +213,11 @@ void _transformClass(ClassDeclaration cls, TextEditTransaction code,
         _transformFields(file, member, code, logger);
 
       }
+    } else if ( (member is MethodDeclaration) && member.isGetter) {
+      _transformGetter(file,member,code,logger);
     }
+
+
   }
 
 }
@@ -230,6 +234,13 @@ String _getOriginalCode(TextEditTransaction code, AstNode node) =>
 bool _isReadOnly(VariableDeclarationList fields) {
   return _hasKeyword(fields.keyword, Keyword.CONST) ||
       _hasKeyword(fields.keyword, Keyword.FINAL);
+}
+
+void _transformGetter(SourceFile file,MethodDeclaration member,TextEditTransaction code, BuildLogger logger) {
+  if (_hasObservable(member)) {
+    code.edit(member.metadata.first.offset,member.metadata.first.offset,"@reflectable ");
+
+  }
 }
 
 void _transformFields(SourceFile file, FieldDeclaration member,
