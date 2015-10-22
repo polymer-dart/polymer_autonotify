@@ -213,7 +213,7 @@ void _transformClass(ClassDeclaration cls, TextEditTransaction code,
         _transformFields(file, member, code, logger);
 
       }
-    } else if ( (member is MethodDeclaration) && member.isGetter) {
+    } else if ( (member is MethodDeclaration) && ( member.isGetter||member.isSetter) ) {
       _transformGetter(file,member,code,logger);
     }
 
