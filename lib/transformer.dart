@@ -180,9 +180,9 @@ void _transformClass(ClassDeclaration cls, TextEditTransaction code,
     var id = _getSimpleIdentifier(cls.extendsClause.superclass.name);
     if (id.name == 'Observable') {
       if (cls.withClause==null) {
-        code.edit(id.offset, id.end, 'JsProxy with Observable');
+        code.edit(id.offset, id.end, '/*X*/ JsProxy with Observable');
       } else {
-        code.edit(cls.withClause.mixinTypes[0].offset,cls.withClause.mixinTypes[0].offset,"JsProxy,");
+        code.edit(cls.withClause.mixinTypes[0].offset,cls.withClause.mixinTypes[0].offset,"/*Y*/ JsProxy,");
       }
     }
   }
@@ -192,7 +192,7 @@ void _transformClass(ClassDeclaration cls, TextEditTransaction code,
       var id = _getSimpleIdentifier(type.name);
       if (id.name == 'Observable') {
         if (_getSimpleIdentifier(cls.extendsClause.superclass.name)!='PolymerElement') {
-          code.edit(id.offset, id.offset, 'JsProxy,');
+          code.edit(id.offset, id.offset, '/*Z*/ JsProxy,');
         }
       } else if (id.name == 'ChangeNotifier') {
         break;
