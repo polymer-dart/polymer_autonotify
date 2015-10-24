@@ -58,7 +58,7 @@
                         if (Polymer.Dart.AutoNotify.ignoreNextSplice) {
                             newValue._applied = true;
                             // Inform DART that polymer already notified that.
-                            Polymer.Dart.AutoNotify.collectNotified(this);
+                            Polymer.Dart.AutoNotify.collectNotified(this,path);
                         } else {
                             Polymer.Dart.AutoNotify.updateJsVersion(this._resolveModel(path));
                         }

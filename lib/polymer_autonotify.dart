@@ -24,11 +24,11 @@ final JsObject DartAutonotifyJS = () {
     jsChange.version=dartChange.version+1;
   };
 
-  j["collectNotified"] = (el) {
+  j["collectNotified"] = (el,path) {
     // Mark this element as notified
     var x = convertToDart(el);
     if (__CURRENT_SPLICE_DATA!=null) {
-      __CURRENT_SPLICE_DATA.checkDone(x);
+      __CURRENT_SPLICE_DATA.checkDone(x,path);
     }
     //_logger.fine("This is already notified : ${x}");
   };
@@ -237,13 +237,13 @@ class SpliceData {
   List removed;
   SpliceData(this.array,this.index,this.added,this.removed);
 
-  Set done = new Set();
+  Map<Object,Set> done = new Map<Object,Set>();
 
-  bool checkDone(me) {
-    if (done.contains(me))
+  bool checkDone(me,path) {
+    if (done.containsKey(me)&&done[me].contains(path))
       return false;
     else {
-      done.add(me);
+      done.putIfAbsent(me,() => new Set()).add(path);
       return true;
     }
   }
@@ -287,7 +287,7 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
 
     try {
       DartAutonotifyJS["ignoreNextSplice"] = true;
-      if (spliceData.checkDone(_element)) {
+      if (spliceData.checkDone(_element,"${path}.splices")) {
         __CURRENT_SPLICE_DATA = spliceData;
         _element.jsElement.callMethod("_notifySplice", [js, path, spliceData.index, spliceData.added, spliceData.removed.map(convertToJs).toList()]);
         __CURRENT_SPLICE_DATA = null; // garbage collection you are my friend.
