@@ -289,7 +289,8 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
       DartAutonotifyJS["ignoreNextSplice"] = true;
       if (spliceData.checkDone(_element,"${path}.splices")) {
         __CURRENT_SPLICE_DATA = spliceData;
-        _element.jsElement.callMethod("_notifySplice", [js, path, spliceData.index, spliceData.added, spliceData.removed.map(convertToJs).toList()]);
+        JsArray removed = new JsArray.from(spliceData.removed.map(convertToJs));
+        _element.jsElement.callMethod("_notifySplice", [js, path, spliceData.index, spliceData.added, removed]);
         __CURRENT_SPLICE_DATA = null; // garbage collection you are my friend.
       }
     } finally {
