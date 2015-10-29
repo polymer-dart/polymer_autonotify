@@ -357,11 +357,13 @@ class ListPropertyNotifier extends PropertyNotifier
           .listChanges
           .listen((List<ListChangeRecord> rc) {
         // Notify splice
-        rc.forEach((ListChangeRecord lc) {
+        new List.from(rc)
+          //..sort((ListChangeRecord rc1,ListChangeRecord rc2) => rc1.removed!=null && rc1.removed.length>0 ? 1:-1)
+          ..forEach((ListChangeRecord lc) {
           // Avoid loops when splicing jsArray
           new ChangeVersion(_target).version++;
 
-          notifySplice(null,new SpliceData( _target, lc.index, lc.addedCount, lc.removed));
+
           // Adjust references
 
           // Fix observers
@@ -371,8 +373,8 @@ class ListPropertyNotifier extends PropertyNotifier
               subNodes.remove(name).removeReference(name, this);
             }
 
-            // fix path on the rest
-            for (int i = lc.index; i < target.length-lc.addedCount; i++) {
+            // fix path on the rest (use subnodes length because it is the actual remainng
+            for (int i = lc.index; i < subNodes.length; i++) {
               String fromName = (i + lc.removed.length).toString();
               String toName = i.toString();
 
@@ -382,11 +384,13 @@ class ListPropertyNotifier extends PropertyNotifier
           }
           if (lc.addedCount > 0) {
             // Fix path on tail
-            for (int i = target.length - 1;
-                i >= lc.index + lc.addedCount;
+            // NOTE : use subnodes length because that was the length when the change occurred
+            // This is relevant when more than one change ad a time are given
+            for (int i = subNodes.length-1 ;
+                i >= lc.index;
                 i--) {
-              String fromName = (i - lc.addedCount).toString();
-              String toName = i.toString();
+              String fromName = i.toString();
+              String toName = (i+lc.addedCount).toString();
 
               subNodes[toName] = subNodes.remove(fromName)
                 ..renameReference(fromName, toName, this);
@@ -401,6 +405,10 @@ class ListPropertyNotifier extends PropertyNotifier
               }
             }
           }
+
+          // Notify
+          notifySplice(null,new SpliceData( _target, lc.index, lc.addedCount, lc.removed));
+
         });
       });
     }
