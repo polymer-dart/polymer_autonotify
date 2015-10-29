@@ -366,6 +366,8 @@ class ListPropertyNotifier extends PropertyNotifier
 
           // Adjust references
 
+          int adjust = lc.addedCount-lc.removed.length;
+
           // Fix observers
           if (lc.removed != null && lc.removed.length > 0) {
             for (int i = 0; i < lc.removed.length; i++) {
@@ -374,26 +376,30 @@ class ListPropertyNotifier extends PropertyNotifier
             }
 
             // fix path on the rest (use subnodes length because it is the actual remainng
-            for (int i = lc.index; i < subNodes.length; i++) {
-              String fromName = (i + lc.removed.length).toString();
-              String toName = i.toString();
+            if (adjust<0) {
+              for (int i = lc.index; i < subNodes.length; i++) {
+                String fromName = (i - adjust).toString();
+                String toName = i.toString();
 
-              subNodes[toName] = subNodes.remove(fromName)
-                ..renameReference(fromName, toName, this);
+                subNodes[toName] = subNodes.remove(fromName)
+                  ..renameReference(fromName, toName, this);
+              }
             }
           }
           if (lc.addedCount > 0) {
             // Fix path on tail
             // NOTE : use subnodes length because that was the length when the change occurred
             // This is relevant when more than one change ad a time are given
-            for (int i = subNodes.length-1 ;
-                i >= lc.index;
-                i--) {
-              String fromName = i.toString();
-              String toName = (i+lc.addedCount).toString();
+            if (adjust>0) {
+              for (int i = subNodes.length - 1;
+              i >= lc.index;
+              i--) {
+                String fromName = i.toString();
+                String toName = (i + adjust).toString();
 
-              subNodes[toName] = subNodes.remove(fromName)
-                ..renameReference(fromName, toName, this);
+                subNodes[toName] = subNodes.remove(fromName)
+                  ..renameReference(fromName, toName, this);
+              }
             }
 
             // Add new observers
