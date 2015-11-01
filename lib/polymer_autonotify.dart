@@ -19,7 +19,9 @@ final JsObject DartAutonotifyJS = () {
   JsObject j = context["Polymer"]["Dart"]["AutoNotify"];
   j["updateJsVersion"] = (js) {
     var dart = convertToDart(js);
+    var js1 = js;
     js = convertToJs(dart);
+
     ChangeVersion jsChange = new ChangeVersion(js);
     ChangeVersion dartChange = new ChangeVersion(dart);
     //jsChange.version=dartChange.version+1;
@@ -31,7 +33,7 @@ final JsObject DartAutonotifyJS = () {
     // Mark this element as notified
     if (__CURRENT_SPLICE_DATA!=null) {
       var x = convertToDart(el);
-      __CURRENT_SPLICE_DATA.checkDone(x,path);
+      __CURRENT_SPLICE_DATA.setDone(x,path);
       return true;
     }
     return false;
@@ -236,21 +238,54 @@ abstract class HasChildrenReflectiveMixin implements HasChildrenMixin {
 }
 
 class SpliceData {
+  static int counter=0;
+  int id = counter++;
   List array;
   int index;
   int added;
   List removed;
+
+  List _indexSplice;
+
+  List get indexSplice {
+    if (_indexSplice==null) {
+      _indexSplice = [index,removed.length]..addAll(array.sublist(index,index+added).map(convertToJs));
+    }
+    return _indexSplice;
+  }
+
+  JsObject _splices;
+
+  JsObject get splices {
+    if (_splices == null) {
+      _splices = DartAutonotifyJS.callMethod("applySplice", [convertToJs(array),new JsArray()..add(new JsObject.jsify({
+        "index"  : index,
+        "addedCount" : added,
+        "removed" : new JsArray.from(removed.map(convertToJs))
+      }))]);
+    }
+
+    return _splices;
+
+  }
+
   SpliceData(this.array,this.index,this.added,this.removed);
 
   Map<Object,Set> done = new Map<Object,Set>();
 
   bool checkDone(me,path) {
-    if (done.containsKey(me)&&done[me].contains(path))
+    if (done.containsKey(me)&&done[me].contains(path)) {
+      _logger.fine("#${id} CHECK DONE ALREADY DONE ${me} -> ${path}");
       return false;
-    else {
-      done.putIfAbsent(me,() => new Set()).add(path);
+    } else {
+      _logger.fine("#${id} CHECK DONE FIRST TIME ${me} -> ${path}");
+      setDone(me,path);
       return true;
     }
+  }
+
+  void setDone(me,path) {
+    done.putIfAbsent(me,() => new Set()).add(path);
   }
 }
 
@@ -277,6 +312,7 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
   }
 
   notifySplice(String path,SpliceData spliceData) {
+    _logger.fine("Notifiyng SPLICE ${spliceData.id} FOR ${_element.id}");
     JsArray js = convertToJs(spliceData.array);
     ChangeVersion jsVersion = new ChangeVersion(js);
     ChangeVersion dartVersion = new ChangeVersion(spliceData.array);
@@ -292,7 +328,8 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
 
       jsVersion.version = dartVersion.version;
 
-      js.callMethod("splice",[spliceData.index,spliceData.removed.length]..addAll(spliceData.array.sublist(spliceData.index,spliceData.index+spliceData.added).map(convertToJs)));
+      _logger.fine("#${spliceData.id} CHANGING JS ");
+      js.callMethod("splice",spliceData.indexSplice);
 
 
 
@@ -303,8 +340,13 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
       if (spliceData.checkDone(_element,"${path}.splices")) {
         __CURRENT_SPLICE_DATA = spliceData;
         try {
+
+          _element.jsElement.callMethod("set",["${path}.splices",spliceData.splices]);
+          //_element.notifyPath(,spliceData.splices);
+          /*
           JsArray removed = new JsArray.from(spliceData.removed.map(convertToJs));
           _element.jsElement.callMethod("_notifySplice", [js, path, spliceData.index, spliceData.added, removed]);
+          */
         } finally {
           __CURRENT_SPLICE_DATA = null;
           // garbage collection you are my friend.
@@ -371,6 +413,7 @@ class ListPropertyNotifier extends PropertyNotifier
       _sub = (target as ObservableList)
           .listChanges
           .listen((List<ListChangeRecord> rc) {
+        _logger.fine("PRocessing changes ${rc.length}");
         // Notify splice
         rc
           //..sort((ListChangeRecord rc1,ListChangeRecord rc2) => rc1.removed!=null && rc1.removed.length>0 ? 1:-1)
@@ -432,6 +475,7 @@ class ListPropertyNotifier extends PropertyNotifier
 
         });
 
+        _logger.fine("END PROCESSING CHANGES");
         new ChangeVersion(convertToJs(_target)).comingFromJS = false; // Reset Flag
       });
     }
