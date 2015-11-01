@@ -13,7 +13,7 @@ export "package:polymer_autonotify/polymer_observe_bridge.dart";
 Logger _logger = new Logger("draft.polymer.autonotify");
 
 
-SpliceData __CURRENT_SPLICE_DATA;
+SplicesData __CURRENT_SPLICE_DATA;
 
 final JsObject DartAutonotifyJS = () {
   JsObject j = context["Polymer"]["Dart"]["AutoNotify"];
@@ -26,7 +26,7 @@ final JsObject DartAutonotifyJS = () {
     ChangeVersion dartChange = new ChangeVersion(dart);
     //jsChange.version=dartChange.version+1;
     jsChange.comingFromJS=true;
-    _logger.fine("COMING FROM JS : ignore when darty");
+    //_logger.fine("COMING FROM JS : ignore when darty");
   };
 
   j["collectNotified"] = (el,path) {
@@ -49,7 +49,7 @@ abstract class PropertyNotifier {
   static final Map _cycleDetection = {};
 
   bool notifyPath(String name, var newValue);
-  notifySplice(String path,SpliceData spliceData);
+  notifySplice(String path,SplicesData spliceData);
 
   PropertyNotifier() {}
 
@@ -165,7 +165,7 @@ abstract class HasParentMixin implements PropertyNotifier {
     });
   }
 
-  notifySplice(String path,SpliceData spliceData) {
+  notifySplice(String path,SplicesData spliceData) {
     parents.forEach((String parentName, List<PropertyNotifier> parents1) {
       parents1.forEach((PropertyNotifier parent) {
         parent.notifySplice(
@@ -238,47 +238,54 @@ abstract class HasChildrenReflectiveMixin implements HasChildrenMixin {
 }
 
 class SpliceData {
-  static int counter=0;
-  int id = counter++;
-  List array;
   int index;
   int added;
   List removed;
 
-  List _indexSplice;
+  SpliceData(this.index,this.added,this.removed);
 
-  List get indexSplice {
-    if (_indexSplice==null) {
-      _indexSplice = [index,removed.length]..addAll(array.sublist(index,index+added).map(convertToJs));
-    }
-    return _indexSplice;
+  void apply(List dartArray,JsArray jsArray) {
+    jsArray.callMethod("splice",[index,removed.length]..addAll(dartArray.sublist(index,index+added).map(convertToJs)));
+  }
+
+}
+
+class SplicesData {
+  static int counter=0;
+  int id = counter++;
+  List array;
+
+  List<SpliceData> indexSplices;
+
+  void apply() {
+    indexSplices.forEach((SpliceData sd) => sd.apply(array,convertToJs(array) as JsArray));
   }
 
   JsObject _splices;
 
   JsObject get splices {
     if (_splices == null) {
-      _splices = DartAutonotifyJS.callMethod("applySplice", [convertToJs(array),new JsArray()..add(new JsObject.jsify({
-        "index"  : index,
-        "addedCount" : added,
-        "removed" : new JsArray.from(removed.map(convertToJs))
-      }))]);
+      _splices = DartAutonotifyJS.callMethod("applySplice", [convertToJs(array),new JsArray.from(indexSplices.map((SpliceData sd) => new JsObject.jsify({
+        "index"  : sd.index,
+        "addedCount" : sd.added,
+        "removed" : new JsArray.from(sd.removed.map(convertToJs))
+      })))]);
     }
 
     return _splices;
 
   }
 
-  SpliceData(this.array,this.index,this.added,this.removed);
+  SplicesData(this.array);
 
   Map<Object,Set> done = new Map<Object,Set>();
 
   bool checkDone(me,path) {
     if (done.containsKey(me)&&done[me].contains(path)) {
-      _logger.fine("#${id} CHECK DONE ALREADY DONE ${me} -> ${path}");
+      //_logger.fine("#${id} CHECK DONE ALREADY DONE ${me} -> ${path}");
       return false;
     } else {
-      _logger.fine("#${id} CHECK DONE FIRST TIME ${me} -> ${path}");
+      //_logger.fine("#${id} CHECK DONE FIRST TIME ${me} -> ${path}");
       setDone(me,path);
       return true;
     }
@@ -311,8 +318,8 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
     return _element.notifyPath(name, newValue);
   }
 
-  notifySplice(String path,SpliceData spliceData) {
-    _logger.fine("Notifiyng SPLICE ${spliceData.id} FOR ${_element.id}");
+  notifySplice(String path,SplicesData spliceData) {
+    //_logger.fine("Notifiyng SPLICE ${spliceData.id} FOR ${_element.id}");
     JsArray js = convertToJs(spliceData.array);
     ChangeVersion jsVersion = new ChangeVersion(js);
     ChangeVersion dartVersion = new ChangeVersion(spliceData.array);
@@ -328,8 +335,9 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
 
       jsVersion.version = dartVersion.version;
 
-      _logger.fine("#${spliceData.id} CHANGING JS ");
-      js.callMethod("splice",spliceData.indexSplice);
+      //_logger.fine("#${spliceData.id} CHANGING JS ");
+
+      spliceData.apply();
 
 
 
@@ -413,11 +421,13 @@ class ListPropertyNotifier extends PropertyNotifier
       _sub = (target as ObservableList)
           .listChanges
           .listen((List<ListChangeRecord> rc) {
-        _logger.fine("PRocessing changes ${rc.length}");
+        //_logger.fine("PRocessing changes ${rc.length}");
         // Notify splice
-        rc
+        SplicesData splicesData = new SplicesData(_target);
+        splicesData.indexSplices =
+        rc.
           //..sort((ListChangeRecord rc1,ListChangeRecord rc2) => rc1.removed!=null && rc1.removed.length>0 ? 1:-1)
-          ..forEach((ListChangeRecord lc) {
+          map((ListChangeRecord lc) {
           // Avoid loops when splicing jsArray
           new ChangeVersion(_target).version++;
 
@@ -471,11 +481,11 @@ class ListPropertyNotifier extends PropertyNotifier
           }
 
           // Notify
-          notifySplice(null,new SpliceData( _target, lc.index, lc.addedCount, lc.removed));
+          return new SpliceData(lc.index,lc.addedCount,lc.removed);
 
-        });
-
-        _logger.fine("END PROCESSING CHANGES");
+        }).toList();
+        notifySplice(null,splicesData);
+        //_logger.fine("END PROCESSING CHANGES");
         new ChangeVersion(convertToJs(_target)).comingFromJS = false; // Reset Flag
       });
     }

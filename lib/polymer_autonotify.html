@@ -12,8 +12,8 @@
 */
         Polymer.Dart.AutoNotify = {
             applySplice: function(ar,splices) {
-                console.log("APPLY SPLICE");
-                console.dir(splices);
+                //console.log("APPLY SPLICE");
+                //console.dir(splices);
                 return {
                     keySplices: Polymer.Collection.applySplices(ar, splices),
                     indexSplices: splices
@@ -37,7 +37,7 @@
 
                 _propertyChanged: function (path, newValue, oldValue) {
                     if (path.length>8 && path.indexOf(".splices",path.length-8) == path.length - 8) {
-                        console.log("CH:"+path+" NEW VL: "+newValue+" OLD: "+oldValue);
+                        //console.log("CH:"+path+" NEW VL: "+newValue+" OLD: "+oldValue);
 
                         // Inform DART that polymer already notified that.
 
@@ -45,11 +45,11 @@
 
 
                         if (Polymer.Dart.AutoNotify.collectNotified(this,path)) {
-                            console.log("Coming from DART, do not reapply, pleaz.");
+                            //console.log("Coming from DART, do not reapply, pleaz.");
                             newValue._applied = true;
 
                         } else {
-                            console.log("UPDATING JS VERSION OF "+path);
+                            //console.log("UPDATING JS VERSION OF "+path);
                             Polymer.Dart.AutoNotify.updateJsVersion(this._resolveModel(path));
                         }
                     }
