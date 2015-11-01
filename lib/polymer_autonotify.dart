@@ -19,17 +19,22 @@ final JsObject DartAutonotifyJS = () {
   JsObject j = context["Polymer"]["Dart"]["AutoNotify"];
   j["updateJsVersion"] = (js) {
     var dart = convertToDart(js);
+    js = convertToJs(dart);
     ChangeVersion jsChange = new ChangeVersion(js);
     ChangeVersion dartChange = new ChangeVersion(dart);
-    jsChange.version=dartChange.version+1;
+    //jsChange.version=dartChange.version+1;
+    jsChange.comingFromJS=true;
+    _logger.fine("COMING FROM JS : ignore when darty");
   };
 
   j["collectNotified"] = (el,path) {
     // Mark this element as notified
-    var x = convertToDart(el);
     if (__CURRENT_SPLICE_DATA!=null) {
+      var x = convertToDart(el);
       __CURRENT_SPLICE_DATA.checkDone(x,path);
+      return true;
     }
+    return false;
     //_logger.fine("This is already notified : ${x}");
   };
 
@@ -276,6 +281,12 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
     ChangeVersion jsVersion = new ChangeVersion(js);
     ChangeVersion dartVersion = new ChangeVersion(spliceData.array);
 
+
+    if (jsVersion.comingFromJS) {
+      jsVersion.version = dartVersion.version;
+      return;
+    }
+
     // Sync'em
     if (jsVersion.version != dartVersion.version) {
 
@@ -283,20 +294,23 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
 
       js.callMethod("splice",[spliceData.index,spliceData.removed.length]..addAll(spliceData.array.sublist(spliceData.index,spliceData.index+spliceData.added).map(convertToJs)));
 
+
+
     }
 
-    try {
-      DartAutonotifyJS["ignoreNextSplice"] = true;
+
+
       if (spliceData.checkDone(_element,"${path}.splices")) {
         __CURRENT_SPLICE_DATA = spliceData;
-        JsArray removed = new JsArray.from(spliceData.removed.map(convertToJs));
-        _element.jsElement.callMethod("_notifySplice", [js, path, spliceData.index, spliceData.added, removed]);
-        __CURRENT_SPLICE_DATA = null; // garbage collection you are my friend.
+        try {
+          JsArray removed = new JsArray.from(spliceData.removed.map(convertToJs));
+          _element.jsElement.callMethod("_notifySplice", [js, path, spliceData.index, spliceData.added, removed]);
+        } finally {
+          __CURRENT_SPLICE_DATA = null;
+          // garbage collection you are my friend.
+        }
       }
-    } finally {
-      // just in case something weird happens ..
-      DartAutonotifyJS["ignoreNextSplice"] = false;
-    }
+
 
   }
 
@@ -310,6 +324,7 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
 class ChangeVersion {
   static final Expando<ChangeVersion> _versionTrackingExpando = new Expando();
   int version;
+  bool comingFromJS=false;
 
   ChangeVersion._([this.version = 0]);
 
@@ -357,7 +372,7 @@ class ListPropertyNotifier extends PropertyNotifier
           .listChanges
           .listen((List<ListChangeRecord> rc) {
         // Notify splice
-        new List.from(rc)
+        rc
           //..sort((ListChangeRecord rc1,ListChangeRecord rc2) => rc1.removed!=null && rc1.removed.length>0 ? 1:-1)
           ..forEach((ListChangeRecord lc) {
           // Avoid loops when splicing jsArray
@@ -416,6 +431,8 @@ class ListPropertyNotifier extends PropertyNotifier
           notifySplice(null,new SpliceData( _target, lc.index, lc.addedCount, lc.removed));
 
         });
+
+        new ChangeVersion(convertToJs(_target)).comingFromJS = false; // Reset Flag
       });
     }
   }
@@ -445,6 +462,7 @@ abstract class PolymerAutoNotifySupportBehavior implements
   PolymerElementPropertyNotifier _rootNotifier;
 
   static void created(PolymerAutoNotifySupportBehavior mixin) {
+    assert(DartAutonotifyJS!=null);
     mixin._rootNotifier = new PropertyNotifier.from(mixin);
   }
 

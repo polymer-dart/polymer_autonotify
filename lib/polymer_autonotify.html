@@ -22,44 +22,25 @@
 
                 _resolveModel: function(path) {
                     var parts = this._getPathParts(path);
-                    var array;
+                    var prop = parts.splice(parts.length - 1, 1)[0];
 
                     // Get the model which is being updated.
-                    var thisArg = this;
-                    for (var i = 0; i < parts.length - 1; i++) {
-                        var part = parts[i];
-
-                        if (array && (parseInt(part) == part)) {
-                            thisArg = Polymer.Collection.get(array).getItem(part);
-                        } else {
-                            thisArg = thisArg[part];
-                        }
-
-                        if (!thisArg) {
-                            return;
-                        }
-                        array = Array.isArray(thisArg) ? thisArg : null;
-                    }
-
-                    // The property of the model which is being updated.
-                    var prop = parts[parts.length - 1];
-                    if (array && (parseInt(prop) == prop)) {
-                        // Ouch, O(n) operation :(. Also doesn't support duplicates :(.
-                        prop = array.indexOf(Polymer.Collection.get(array).getItem(prop));
-                    }
-
-                    // Grab the __dartClass__ if we already have one
-                    thisArg = thisArg.__dartClass__ || thisArg;
-                    return thisArg;
+                    return this.get(parts);
                 },
 
                 _propertyChanged: function (path, newValue, oldValue) {
-                    if (path.indexOf(".splices",path.length-8) == path.length - 8) {
-                        if (Polymer.Dart.AutoNotify.ignoreNextSplice) {
+                    if (path.length>8 && path.indexOf(".splices",path.length-8) == path.length - 8) {
+                        console.log("CH:"+path+" NEW VL: "+newValue+" OLD: "+oldValue);
+
+                        // Inform DART that polymer already notified that.
+
+
+                        if (Polymer.Dart.AutoNotify.collectNotified(this,path)) {
+                            console.log("Coming from DART, do not reapply, pleaz.");
                             newValue._applied = true;
-                            // Inform DART that polymer already notified that.
-                            Polymer.Dart.AutoNotify.collectNotified(this,path);
+
                         } else {
+                            console.log("UPDATING JS VERSION OF "+path);
                             Polymer.Dart.AutoNotify.updateJsVersion(this._resolveModel(path));
                         }
                     }
