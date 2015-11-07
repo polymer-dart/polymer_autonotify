@@ -244,32 +244,38 @@ class SpliceData {
 
   SpliceData(this.index,this.added,this.removed);
 
-  void apply(List dartArray,JsArray jsArray) {
+  void apply(List dartArray) {
+    JsArray jsArray = convertToJs(dartArray)  as JsArray;
     jsArray.callMethod("splice",[index,removed.length]..addAll(dartArray.sublist(index,index+added).map(convertToJs)));
   }
 
 }
 
 class SplicesData {
-  static int counter=0;
-  int id = counter++;
+  //static int counter=0;
+  //int id = counter++;
   List array;
 
-  List<SpliceData> indexSplices;
+  List<SpliceData> spliceData;
 
   void apply() {
-    indexSplices.forEach((SpliceData sd) => sd.apply(array,convertToJs(array) as JsArray));
+    spliceData.forEach((SpliceData sd) => sd.apply(array));
   }
 
-  JsObject _splices;
+  Map _splices;
 
-  JsObject get splices {
+  Map get splices {
     if (_splices == null) {
-      _splices = DartAutonotifyJS.callMethod("applySplice", [convertToJs(array),new JsArray.from(indexSplices.map((SpliceData sd) => new JsObject.jsify({
+      List indexSplices = spliceData.map((SpliceData sd) =>{
         "index"  : sd.index,
         "addedCount" : sd.added,
-        "removed" : new JsArray.from(sd.removed.map(convertToJs))
-      })))]);
+        "removed" : sd.removed
+      }).toList();
+      _splices = {
+        "splices" : PolymerCollection.applySplices(array,indexSplices),
+        "indexSplices" : indexSplices
+      };
+
     }
 
     return _splices;
@@ -348,8 +354,8 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
       if (spliceData.checkDone(_element,"${path}.splices")) {
         __CURRENT_SPLICE_DATA = spliceData;
         try {
-
-          _element.jsElement.callMethod("set",["${path}.splices",spliceData.splices]);
+          _element.set("${path}.splices",spliceData.splices);
+          //_element.jsElement.callMethod("set",["${path}.splices",spliceData.splices]);
           //_element.notifyPath(,spliceData.splices);
           /*
           JsArray removed = new JsArray.from(spliceData.removed.map(convertToJs));
@@ -424,7 +430,7 @@ class ListPropertyNotifier extends PropertyNotifier
         //_logger.fine("PRocessing changes ${rc.length}");
         // Notify splice
         SplicesData splicesData = new SplicesData(_target);
-        splicesData.indexSplices =
+        splicesData.spliceData =
         rc.
           //..sort((ListChangeRecord rc1,ListChangeRecord rc2) => rc1.removed!=null && rc1.removed.length>0 ? 1:-1)
           map((ListChangeRecord lc) {
