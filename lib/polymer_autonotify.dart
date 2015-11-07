@@ -168,9 +168,7 @@ abstract class HasParentMixin implements PropertyNotifier {
   notifySplice(String path,SplicesData spliceData) {
     parents.forEach((String parentName, List<PropertyNotifier> parents1) {
       parents1.forEach((PropertyNotifier parent) {
-        parent.notifySplice(
-            path != null ? parentName + "." + path : parentName,
-            spliceData);
+        parent.notifySplice(parentName + "." + path, spliceData);
       });
     });
   }
@@ -351,10 +349,10 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
 
 
 
-      if (spliceData.checkDone(_element,"${path}.splices")) {
+      if (spliceData.checkDone(_element,path)) {
         __CURRENT_SPLICE_DATA = spliceData;
         try {
-          _element.set("${path}.splices",spliceData.splices);
+          _element.set(path,spliceData.splices);
           //_element.jsElement.callMethod("set",["${path}.splices",spliceData.splices]);
           //_element.notifyPath(,spliceData.splices);
           /*
@@ -490,7 +488,7 @@ class ListPropertyNotifier extends PropertyNotifier
           return new SpliceData(lc.index,lc.addedCount,lc.removed);
 
         }).toList();
-        notifySplice(null,splicesData);
+        notifySplice("splices",splicesData);
         //_logger.fine("END PROCESSING CHANGES");
         new ChangeVersion(convertToJs(_target)).comingFromJS = false; // Reset Flag
       });
