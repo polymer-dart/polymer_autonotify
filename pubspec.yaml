@@ -1,12 +1,12 @@
 name: polymer_autonotify
-version: 0.0.4-SNAPSHOT
+version: 1.0.0-rc.6
 author: Vittorio Ballestra (Drafintech s.r.l.) <vittorio.ballestra@gmail.com>
 description: auto notify support for Polymer 1.0
 homepage : https://github.com/dam0vm3nt/polymer_autonotify
 sdk: ">=1.8.0 <2.0.0"
 
 dependencies:
- polymer: ">=1.0.0 <2.0.0"
+ polymer: 1.0.0-rc.6
  observe: any
  barback: any
  test: any
@@ -28,19 +28,19 @@ dependencies:
 
 
 
-dependency_overrides:
-  observe:
-   path: ../observe
+#dependency_overrides:
+#  observe:
+##   path: ../observe
 #   git:
 #    ref: reflectable
 #    url: https://github.com/dam0vm3nt/observe
-  polymer:
-    git:
-      ref: 1.0.0-rc.6
-      url: https://github.com/dart-lang/polymer-dart.git
-  reflectable:
-   path: ../reflectable/reflectable
-  polymer_interop:
-    git:
-      ref: 1.0.0-rc.5
-      url: https://github.com/dart-lang/polymer_interop.git
+#  polymer:
+#    git:
+#      ref: 1.0.0-rc.6
+#      url: https://github.com/dart-lang/polymer-dart.git
+#  reflectable:
+#   path: ../reflectable/reflectable
+#  polymer_interop:
+#    git:
+#      ref: 1.0.0-rc.5
+#      url: https://github.com/dart-lang/polymer_interop.git
