@@ -270,8 +270,10 @@ class SplicesData {
         "removed" : sd.removed
       }).toList();
       _splices = {
+        "object" : array,
         "splices" : PolymerCollection.applySplices(array,indexSplices),
-        "indexSplices" : indexSplices
+        "indexSplices" : indexSplices,
+        "_applied" : true
       };
 
     }
@@ -352,7 +354,7 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
       if (spliceData.checkDone(_element,path)) {
         __CURRENT_SPLICE_DATA = spliceData;
         try {
-          _element.set(path,spliceData.splices);
+          (_element as PolymerElement).set(path,spliceData.splices);
           //_element.jsElement.callMethod("set",["${path}.splices",spliceData.splices]);
           //_element.notifyPath(,spliceData.splices);
           /*
