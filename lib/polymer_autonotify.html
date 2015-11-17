@@ -36,11 +36,7 @@
 
 
 
-                        if (Polymer.Dart.AutoNotify.collectNotified(this,path)) {
-                            //console.log("Coming from DART, do not reapply, pleaz.");
-                            newValue._applied = true;
-
-                        } else {
+                        if (!Polymer.Dart.AutoNotify.collectNotified(this,path)) {
                             //console.log("UPDATING JS VERSION OF "+path);
                             Polymer.Dart.AutoNotify.updateJsVersion(this._resolveModel(path));
                         }
