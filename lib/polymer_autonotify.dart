@@ -52,6 +52,7 @@ final JsObject DartAutonotifyJS = () {
     el = convertToDart(el);
     //_logger.fine("Darty : ${el}");
     new PropertyNotifier.from(el).destroy();
+    PropertyNotifier.evict(el);
     //_logger.fine("Done");
   };
 
@@ -509,12 +510,14 @@ class ListPropertyNotifier extends PropertyNotifier
 }
 
 @BehaviorProxy('Polymer.Dart.AutoNotify.Behavior')
+@deprecated
 abstract class PolymerAutoNotifySupportJsBehavior {
   // Needed to be sure the behavior get initialized.
   var js = DartAutonotifyJS;
 }
 
 @behavior
+@deprecated
 abstract class PolymerAutoNotifySupportBehavior
     implements PolymerAutoNotifySupportJsBehavior {}
 
