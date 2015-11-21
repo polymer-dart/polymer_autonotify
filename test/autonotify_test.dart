@@ -22,10 +22,8 @@ int counter = 0;
 
 
 main() async {
-  print("ATTENDO");
   await initPolymer();
 
-  print ("PoLYMER READY");
   setUp(() {
     element = document.createElement('test-main');
     //document.body.append(element);
@@ -47,7 +45,7 @@ main() async {
       element.samples.add(new Sample("X1","Y1"));
       element.samples.add(new Sample("X2","Y2"));
       element.samples.add(new Sample("X3","Y3"));
-      await new Future.delayed(new Duration(milliseconds:200));
+      await miracle();
       //await new Future.value(true);
       DivElement elem1 = Polymer.dom(subElement1.root).querySelector("[data-marker='0']");
       //print(subElement1.outerHtml);
@@ -63,21 +61,142 @@ main() async {
     });
 
     test('update element',() async {
-      //element.add("samples",new Sample("X","Y"));
+      List<Sample> mySamples = new ObservableList();
+      element.samples = mySamples;
+      Sample s1  = new Sample("X","Y");
+      Sample s2 =  new Sample("A","C");
 
-      element.samples[1].field1="alpha1";
+      await miracle();
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='0']"),isNull);
+
+      mySamples.add(s1);
+
+      await miracle();
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='0']"),isNotNull);
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='1']"),isNull);
+
+      mySamples.add(s2);
+
+      await miracle();
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='0']"),isNotNull);
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='1']"),isNotNull);
 
 
-      await new Future.delayed(new Duration(milliseconds:500));
-      //await new Future.value(true);
+      s2.field1="alpha1";
+
+      await miracle();
       DivElement elem1 = Polymer.dom(subElement1.root).querySelector("[data-marker='1']");
-      print(subElement1.outerHtml);
-      expect(elem1,isNotNull);
       expect(elem1.attributes["f1"],"alpha1");
-      expect(elem1.attributes["f2"],"Y1");
+      expect(elem1.attributes["f2"],"C");
     });
+
+    test('replace element',() async {
+      List<Sample> mySamples = new ObservableList();
+      element.samples = mySamples;
+      Sample s1  = new Sample("X","Y");
+      Sample s2 =  new Sample("A","C");
+
+      await miracle();
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='0']"),isNull);
+
+      mySamples.add(s1);
+
+      await miracle();
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='0']"),isNotNull);
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='1']"),isNull);
+
+      mySamples.add(s2);
+
+      await miracle();
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='0']"),isNotNull);
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='1']"),isNotNull);
+      DivElement elem1 = Polymer.dom(subElement1.root).querySelector("[data-marker='1']");
+      expect(elem1.attributes["f1"],"A");
+      expect(elem1.attributes["f2"],"C");
+
+      mySamples[1] = new Sample("alpha1","alpha2");
+
+      await miracle();
+      elem1 = Polymer.dom(subElement1.root).querySelector("[data-marker='1']");
+      expect(elem1.attributes["f1"],"alpha1");
+      expect(elem1.attributes["f2"],"alpha2");
+    });
+
+    test('insert element',() async {
+      List<Sample> mySamples = new ObservableList();
+      element.samples = mySamples;
+      Sample s1  = new Sample("X","Y");
+      Sample s2 =  new Sample("A","C");
+
+      await miracle();
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='0']"),isNull);
+
+      mySamples.add(s1);
+
+      await miracle();
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='0']"),isNotNull);
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='1']"),isNull);
+
+      mySamples.add(s2);
+
+      await miracle();
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='0']"),isNotNull);
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='1']"),isNotNull);
+      DivElement elem1 = Polymer.dom(subElement1.root).querySelector("[data-marker='1']");
+      expect(elem1.attributes["f1"],"A");
+      expect(elem1.attributes["f2"],"C");
+
+      mySamples.insert(1, new Sample("alpha1","alpha2"));
+
+      await miracle();
+      elem1 = Polymer.dom(subElement1.root).querySelector("[data-marker='1']");
+      expect(elem1.attributes["f1"],"alpha1");
+      expect(elem1.attributes["f2"],"alpha2");
+      elem1 = Polymer.dom(subElement1.root).querySelector("[data-marker='2']");
+      expect(elem1.attributes["f1"],"A");
+      expect(elem1.attributes["f2"],"C");
+    });
+
+    test('remove element',() async {
+      List<Sample> mySamples = new ObservableList();
+      element.samples = mySamples;
+      Sample s1  = new Sample("X","Y");
+      Sample s2 =  new Sample("A","C");
+
+      await miracle();
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='0']"),isNull);
+
+      mySamples.add(s1);
+
+      await miracle();
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='0']"),isNotNull);
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='1']"),isNull);
+
+      mySamples.add(s2);
+
+      await miracle();
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='0']"),isNotNull);
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='1']"),isNotNull);
+      DivElement elem1 = Polymer.dom(subElement1.root).querySelector("[data-marker='1']");
+      expect(elem1.attributes["f1"],"A");
+      expect(elem1.attributes["f2"],"C");
+
+      mySamples.remove(s1);
+
+      await miracle();
+      elem1 = Polymer.dom(subElement1.root).querySelector("[data-marker='0']");
+      expect(elem1.attributes["f1"],"A");
+      expect(elem1.attributes["f2"],"C");
+      expect(Polymer.dom(subElement1.root).querySelector("[data-marker='1']"),isNull);
+    });
+
+
   });
+
 }
+
+Future miracle() => new Future.delayed(new Duration(milliseconds:0));
+
 
 
 
@@ -92,7 +211,7 @@ class Sample extends Observable {
 }
 
 @PolymerRegister("test-element")
-class TestElement extends PolymerElement   with Observable , PolymerAutoNotifySupportJsBehavior, PolymerAutoNotifySupportBehavior {
+class TestElement extends PolymerElement   with Observable , AutonotifyBehavior {
   static final Logger _logger = new Logger("test.element.TestElement");
 
   @observable @property List<Sample> samples;

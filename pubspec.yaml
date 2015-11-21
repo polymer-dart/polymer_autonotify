@@ -7,24 +7,28 @@ sdk: ">=1.8.0 <2.0.0"
 
 dependencies:
  polymer: 1.0.0-rc.6
- observe: any
+ observe:
+  git:
+   ref: reflectable
+   url: https://github.com/dam0vm3nt/observe
  barback: any
  test: any
  reflectable: ">=0.2.1"
  web_components: '>=0.12.0'
 
-#transformers:
-#- web_components:
-#   entry_points:
-#    - test/autonotify_test.html
-#- test/pub_serve:
-#   $include: test/**_test{.*,}.dart
-#- observe:
-#   files:
-#    - test/autonotify_test.dart
-#- reflectable:
-#   entry_points:
-#    - test/autonotify_test.dart
+transformers:
+- web_components:
+   entry_points:
+    - test/autonotify_test.html
+- test/pub_serve:
+   $include: test/**_test{.*,}.dart
+- polymer_autonotify
+- observe:
+   files:
+    - test/autonotify_test.dart
+- reflectable:
+   entry_points:
+    - test/autonotify_test.dart
 
 
 

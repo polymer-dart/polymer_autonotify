@@ -40,6 +40,14 @@ final JsObject DartAutonotifyJS = () {
     //_logger.fine("This is already notified : ${x}");
   };
 
+  j["createAutonotifier"] = (el) {
+    //_logger.fine("Create autonotifier for ${el}");
+    el = convertToDart(el);
+    //_logger.fine("Darty : ${el}");
+    new PropertyNotifier.from(el);
+    //_logger.fine("Done");
+  };
+
   return j;
 }();
 
@@ -514,19 +522,22 @@ class ListPropertyNotifier extends PropertyNotifier
 }
 
 @BehaviorProxy('Polymer.Dart.AutoNotify.Behavior')
-abstract class PolymerAutoNotifySupportJsBehavior {}
+abstract class PolymerAutoNotifySupportJsBehavior {
+  // Needed to be sure the behavior get initialized.
+  var js = DartAutonotifyJS;
+
+}
 
 @behavior
 abstract class PolymerAutoNotifySupportBehavior implements
     PolymerAutoNotifySupportJsBehavior {
-  PolymerElementPropertyNotifier _rootNotifier;
 
-  static void created(PolymerAutoNotifySupportBehavior mixin) {
-    assert(DartAutonotifyJS!=null);
-    mixin._rootNotifier = new PropertyNotifier.from(mixin);
-  }
-
-  static void detached(mixin) {
-    mixin._rootNotifier.destroy();
-  }
 }
+
+// Alternative name for autonotify behavior
+@BehaviorProxy('Polymer.Dart.AutoNotify.Behavior')
+abstract class AutonotifyBehavior {
+  // Needed to be sure the behavior get initialized.
+  var js = DartAutonotifyJS;
+}
+

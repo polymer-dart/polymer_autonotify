@@ -17,6 +17,10 @@
             collectNotified: function(el) {
                 // Placeholder for readability : real one defined in dart
             },
+            createAutonotifier: function(el) {
+                // Placeholder for readability : real one defined in dart
+                throw new Error("NOT IMPLEMENTED");
+            },
             Behavior: {
 
                 _resolveModel: function(path) {
@@ -25,6 +29,12 @@
 
                     // Get the model which is being updated.
                     return this.get(parts);
+                },
+
+                created: function() {
+                    //console.log("CREATING FOR :"+this);
+                    var x = Polymer.Dart.AutoNotify.createAutonotifier(this);
+                    //console.log("DONE ");
                 },
 
                 _propertyChanged: function (path, newValue, oldValue) {

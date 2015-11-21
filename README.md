@@ -20,7 +20,7 @@ This package will add support for autonotify in polymer-dart 1.0, making it poss
 You just have to annotate properties with `@observable` and extend/mixin the familiar `Observable` mixin, exactly like before, and `polymer_autnotify` will take care of calling `polymer` accessor API 
  automatically for you.
 
-To enable the autonotify feature just add the dependency to your project and add the mixins `PolymerAutoNotifySupportJsBehavior` and `PolymerAutoNotifySupportBehavior` to your `PolymerElement` then 
+To enable the autonotify feature just add the dependency to your project and add the mixin `AutonotifyBehavior` to your `PolymerElement` then 
 annotate property with `@observable` (just like in the previous polymer version). 
 
 
@@ -75,4 +75,11 @@ If you want to use it your main `pubspec.yaml` should appear like this :
 
 ...
 ```
-`observe` and `polymer_autonotify` transformer should also be placed in all your imported packages that exports `polymer` your custom components using `autonotify` and exporting models.
+`observe` and `polymer_autonotify` transformer should also be placed in all your imported packages that exports custom `polymer` components using `autonotify` and/or exporting models object extending/mixing `Observe`.
+
+## Recent Changes
+
+
+Current version is retro-compatible but you can now use only one behavior (i.e.: `AutonotifyBehavior`) instead of the two.
+
+Added some polite tests. You can run them starting a  `pub serve` instance and then `pub run test --pub-serve=8080 -p dartium`. Also in tests you can find a simple sample on how to use this feature.
