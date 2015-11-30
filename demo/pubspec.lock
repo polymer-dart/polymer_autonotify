@@ -121,10 +121,8 @@ packages:
     source: hosted
     version: "1.0.0-rc.7"
   polymer_autonotify:
-    description:
-      path: ".."
-      relative: true
-    source: path
+    description: polymer_autonotify
+    source: hosted
     version: "1.0.0-rc.6+4"
   polymer_elements:
     description: polymer_elements
