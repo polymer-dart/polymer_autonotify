@@ -1,0 +1,33 @@
+name: demo_polymer_autonotify
+description: Elys per Delibere e Determine
+version: 0.0.1
+author: Drafintech s.r.l. <elys@drafintech.it>
+homepage: https://www.drafintech.it/elys
+environment:
+  sdk: '>=1.0.0 <2.0.0'
+dependencies:
+ polymer: 1.0.0-rc.7
+ polymer_elements: 1.0.0-rc.3
+ web_components: '>=0.12.0'
+ reflectable: any
+ polymer_autonotify: "^1.0.0-rc.6+4"
+# polymer_autonotify: 
+#  path: ..
+ observe:
+  git:
+   ref: reflectable
+   url: https://github.com/dam0vm3nt/observe
+ intl: any
+ dnd : any
+ dnd : any
+
+
+transformers:
+- web_components:
+    entry_points:
+    - web/index.html
+- polymer_autonotify
+- observe
+- reflectable:
+    entry_points:
+    - web/index.dart
