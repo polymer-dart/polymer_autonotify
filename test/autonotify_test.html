@@ -11,6 +11,10 @@ BSD-style license that can be found in the LICENSE file.
     <script src="packages/test/dart.js"></script>
 </head>
 <body>
+
+<dom-module id="sample-model">
+</dom-module>
+
 <dom-module id="test-element">
     <template>
         <div>
@@ -28,8 +32,9 @@ BSD-style license that can be found in the LICENSE file.
 
 <dom-module id="test-main">
     <template>
+        <sample-model id="XYZ" my-field="{{field1}}"></sample-model>
         <test-element samples="[[samples]]" message="{{message}}" message2="{{message2.message}}"></test-element>
-        <test-element samples="[[samples]]" message="{{message}}" message2="{{message2.message}}"></test-element>
+        <test-element samples="[[samples]]" message="{{message}}" message2="{{myModel.myField}}"></test-element>
     </template>
 </dom-module>
 

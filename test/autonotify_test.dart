@@ -36,6 +36,15 @@ main() async {
     expect(element,isNotNull);
     expect(subElement1,isNotNull);
     expect(subElement2,isNotNull);
+    expect(element.myModel,isNotNull);
+  });
+
+  group('poly model', () {
+    test("check1",() async {
+      element.field1 = "newVal";
+      await miracle();
+      expect(subElement2.message2,"newVal");
+    });
   });
 
   group('generic tests',() {
@@ -234,6 +243,14 @@ class Holder extends Observable {
   Holder(this.message);
 }
 
+@PolymerRegister("sample-model")
+class SampleModel extends PolymerElement with Observable,AutonotifyBehavior {
+  SampleModel.created() : super.created();
+
+
+  @observable @Property(notify:true) String myField;
+}
+
 @PolymerRegister("test-main")
 class TestMain extends PolymerElement   with Observable, PolymerAutoNotifySupportJsBehavior, PolymerAutoNotifySupportBehavior {
   static final Logger _logger = new Logger("test.element.TestMain");
@@ -241,14 +258,22 @@ class TestMain extends PolymerElement   with Observable, PolymerAutoNotifySuppor
   @observable @property List<Sample> samples = new ObservableList();
   @observable @Property(notify:true) String message="OK";
   @observable @Property(notify:true) Holder message2= new Holder("KO");
+  @observable @Property(notify:true) String field1;
 
+  @observable SampleModel myModel;
   @property int step=1;
+
+  void ready() {
+    myModel = $["XYZ"];
+  }
 
   @reflectable
   String clickMe([_,__]) {
     print("CLICKED");
     samples.insert(1,new Sample("ciao${counter++}","ciao${counter++}"));
   }
+
+
 
   @reflectable
   void removeMe([_,__]) {

@@ -311,7 +311,7 @@ class SplicesData {
 }
 
 class PolymerElementPropertyNotifier extends PropertyNotifier
-    with HasChildrenMixin, HasChildrenReflectiveMixin {
+    with HasChildrenMixin, HasChildrenReflectiveMixin, HasParentMixin {
   PolymerMixin _element;
   //Expando<ChangeVersion> _notifyVersionTrackingExpando = new Expando();
 
@@ -329,11 +329,25 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
     //}
     // Sync'em
 
+    // Notify parents too
+    parents.forEach((String parentName, List<PropertyNotifier> parents1) {
+      parents1.forEach((PropertyNotifier parent) {
+        parent.notifyPath(parentName + "." + name, newValue);
+      });
+    });
+
     return _element.notifyPath(name, newValue);
   }
 
   notifySplice(String path, SplicesData spliceData) {
     //_logger.fine("Notifiyng SPLICE ${spliceData.id} FOR ${_element.id}");
+
+    parents.forEach((String parentName, List<PropertyNotifier> parents1) {
+      parents1.forEach((PropertyNotifier parent) {
+        parent.notifySplice(parentName + "." + path, spliceData);
+      });
+    });
+
     JsArray js = convertToJs(spliceData.array);
     ChangeVersion jsVersion = new ChangeVersion(js);
     ChangeVersion dartVersion = new ChangeVersion(spliceData.array);
