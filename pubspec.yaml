@@ -4,7 +4,7 @@ author: Vittorio Ballestra (Drafintech s.r.l.) <vittorio.ballestra@gmail.com>
 description: auto notify support for Polymer 1.0
 homepage : https://github.com/dam0vm3nt/polymer_autonotify
 environment:
- sdk: ">=1.6.0 <2.0.0"
+ sdk: ">=1.8.0 <2.0.0"
 
 dependencies:
  polymer: ">=1.0.0-rc.8"
