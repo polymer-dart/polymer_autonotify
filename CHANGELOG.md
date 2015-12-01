@@ -1,3 +1,7 @@
+## 1.0.0-rc.8+1
+
+Experimental introducing support for `Observable` `PolymerElement` used as an `@observable` property.
+
 ## 1.0.0-rc.8  
 
 Upgrade to `polymer 1.0.0-rc.8`. Changed reference to `observe` git repo in deps to be more compliant to de facto convetion for bare repos reference.
