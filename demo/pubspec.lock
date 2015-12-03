@@ -99,7 +99,7 @@ packages:
   path:
     description: path
     source: hosted
-    version: "1.3.8"
+    version: "1.3.9"
   plugin:
     description: plugin
     source: hosted
@@ -107,17 +107,15 @@ packages:
   polymer:
     description: polymer
     source: hosted
-    version: "1.0.0-rc.8"
+    version: "1.0.0-rc.9"
   polymer_autonotify:
-    description:
-      path: ".."
-      relative: true
-    source: path
-    version: "1.0.0-rc.8"
+    description: polymer_autonotify
+    source: hosted
+    version: "1.0.0-rc.8+1"
   polymer_elements:
     description: polymer_elements
     source: hosted
-    version: "1.0.0-rc.3"
+    version: "1.0.0-rc.4"
   polymer_interop:
     description: polymer_interop
     source: hosted
