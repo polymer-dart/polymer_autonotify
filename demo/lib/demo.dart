@@ -37,7 +37,7 @@ class TestPolymerAutonotify extends PolymerElement with AutonotifyBehavior, Obse
  void removeItem(Event ev,[_]) {
   DomRepeatModel m = new DomRepeatModel.fromEvent(convertToJs(ev));
 
-  items.removeAt(m.index);
+  items.remove(m["item"]);
  }
 
  TestPolymerAutonotify.created() : super.created();
