@@ -489,6 +489,9 @@ class ListPropertyNotifier extends PropertyNotifier
             // Add new observers
             for (int i = lc.index; i < lc.addedCount + lc.index; i++) {
               HasParentMixin child = new PropertyNotifier.from(target[i]);
+              if (child == null) {
+                child = new FakeSubNode();
+              }
               if (child != null) {
                 subNodes[i.toString()] = child
                   ..addReference(i.toString(), this);
@@ -520,6 +523,12 @@ class ListPropertyNotifier extends PropertyNotifier
     }
     destroyChildren();
     PropertyNotifier.evict(_target);
+  }
+}
+
+class FakeSubNode extends Object with HasParentMixin {
+  void destroy() {
+
   }
 }
 
