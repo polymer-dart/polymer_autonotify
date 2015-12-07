@@ -1,3 +1,7 @@
+## 1.0.0-rc.9
+
+Fixes for lists with native types.
+
 ## 1.0.0-rc.8+1
 
 Experimental introducing support for `Observable` `PolymerElement` used as an `@observable` property.
