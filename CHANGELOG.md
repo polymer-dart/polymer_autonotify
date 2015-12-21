@@ -1,3 +1,7 @@
+## 1.0.0-rc.10
+
+Updated to support `polymer-1.0.0-rc.10`. Just check out [this](https://github.com/dart-lang/polymer-dart/issues/665).
+
 ## 1.0.0-rc.9
 
 Fixes for lists with native types.
