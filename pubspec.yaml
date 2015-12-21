@@ -16,7 +16,6 @@ dependencies:
  test: any
  reflectable: ">=0.4.0 <0.6.0"
  web_components: ^0.12.0
- analyzer: ^0.27.1
 
 transformers:
 - web_components:
