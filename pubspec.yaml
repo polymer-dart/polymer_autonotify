@@ -14,8 +14,9 @@ dependencies:
    url: https://github.com/dam0vm3nt/observe.git
  barback: any
  test: any
- reflectable: ^0.4.0
+ reflectable: ">=0.4.0 <0.6.0"
  web_components: ^0.12.0
+ analyzer: ^0.27.1
 
 transformers:
 - web_components:
@@ -33,9 +34,9 @@ transformers:
 
 
 
-#dependency_overrides:
-#  observe:
-##   path: ../observe
+dependency_overrides:
+  observe:
+   path: ../observe
 #   git:
 #    ref: reflectable
 #    url: https://github.com/dam0vm3nt/observe
