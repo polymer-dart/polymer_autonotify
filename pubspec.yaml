@@ -33,19 +33,6 @@ transformers:
 
 
 
-dependency_overrides:
-  observe:
-   path: ../observe
-#   git:
-#    ref: reflectable
-#    url: https://github.com/dam0vm3nt/observe
-#  polymer:
-#    git:
-#      ref: 1.0.0-rc.6
-#      url: https://github.com/dart-lang/polymer-dart.git
-#  reflectable:
-#   path: ../reflectable/reflectable
-#  polymer_interop:
-#    git:
-#      ref: 1.0.0-rc.5
-#      url: https://github.com/dart-lang/polymer_interop.git
+#dependency_overrides:
+# observe:
+#  path: ../observe
