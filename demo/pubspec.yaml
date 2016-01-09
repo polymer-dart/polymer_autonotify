@@ -7,23 +7,16 @@ environment:
   sdk: '>=1.0.0 <2.0.0'
 dependencies:
  polymer_elements: ">=1.0.0-rc.3"
- web_components: '>=0.12.0'
- reflectable: any
- polymer_autonotify: "^1.0.0-rc.6+4"
-# polymer_autonotify: 
-#  path: ../
- observe:
-  git:
-   ref: reflectable
-   url: https://github.com/dam0vm3nt/observe.git
+ autonotify_observe: "^1.0.0-rc.10"
+
+dependency_overrides:
+ polymer_autonotify:
+  path: ..
+# autonotify_observe:
+#  path: ../../autonotify_observe
 
 
 transformers:
-- web_components:
+- autonotify_observe:
     entry_points:
     - web/index.html
-- polymer_autonotify
-- observe
-- reflectable:
-    entry_points:
-    - web/index.dart

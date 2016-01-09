@@ -4,7 +4,7 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.26.1+14"
+    version: "0.27.1"
   args:
     description: args
     source: hosted
@@ -12,7 +12,11 @@ packages:
   async:
     description: async
     source: hosted
-    version: "1.4.0"
+    version: "1.5.0"
+  autonotify_observe:
+    description: autonotify_observe
+    source: hosted
+    version: "1.0.0"
   barback:
     description: barback
     source: hosted
@@ -32,15 +36,11 @@ packages:
   code_transformers:
     description: code_transformers
     source: hosted
-    version: "0.2.9+4"
+    version: "0.3.1"
   collection:
     description: collection
     source: hosted
     version: "1.2.0"
-  convert:
-    description: convert
-    source: hosted
-    version: "1.0.1"
   crypto:
     description: crypto
     source: hosted
@@ -52,7 +52,7 @@ packages:
   dart_style:
     description: dart_style
     source: hosted
-    version: "0.2.0"
+    version: "0.2.2"
   glob:
     description: glob
     source: hosted
@@ -60,19 +60,19 @@ packages:
   html:
     description: html
     source: hosted
-    version: "0.12.2"
+    version: "0.12.2+1"
   http_multi_server:
     description: http_multi_server
     source: hosted
-    version: "1.3.2"
+    version: "2.0.0"
   http_parser:
     description: http_parser
     source: hosted
-    version: "1.1.0"
+    version: "2.0.0"
   initialize:
     description: initialize
     source: hosted
-    version: "0.6.1+2"
+    version: "0.6.2"
   logging:
     description: logging
     source: hosted
@@ -88,7 +88,7 @@ packages:
   observe:
     description:
       ref: reflectable
-      resolved-ref: "4e73faa824cdca2d3a83d3c9e9acf5bc6cb0b9d1"
+      resolved-ref: "11c94b5b80236f6fe99822c43d6a9667e61e0aaa"
       url: "https://github.com/dam0vm3nt/observe.git"
     source: git
     version: "0.13.1+2"
@@ -107,19 +107,21 @@ packages:
   polymer:
     description: polymer
     source: hosted
-    version: "1.0.0-rc.9"
+    version: "1.0.0-rc.12"
   polymer_autonotify:
-    description: polymer_autonotify
-    source: hosted
-    version: "1.0.0-rc.8+1"
+    description:
+      path: ".."
+      relative: true
+    source: path
+    version: "1.0.0-rc.10"
   polymer_elements:
     description: polymer_elements
     source: hosted
-    version: "1.0.0-rc.4"
+    version: "1.0.0-rc.5"
   polymer_interop:
     description: polymer_interop
     source: hosted
-    version: "1.0.0-rc.5"
+    version: "1.0.0-rc.8"
   pool:
     description: pool
     source: hosted
@@ -131,19 +133,19 @@ packages:
   reflectable:
     description: reflectable
     source: hosted
-    version: "0.4.0"
+    version: "0.5.1"
   shelf:
     description: shelf
     source: hosted
-    version: "0.6.4+2"
+    version: "0.6.4+3"
   shelf_static:
     description: shelf_static
     source: hosted
-    version: "0.2.3+1"
+    version: "0.2.3+2"
   shelf_web_socket:
     description: shelf_web_socket
     source: hosted
-    version: "0.0.1+4"
+    version: "0.0.1+5"
   source_map_stack_trace:
     description: source_map_stack_trace
     source: hosted
@@ -167,11 +169,7 @@ packages:
   test:
     description: test
     source: hosted
-    version: "0.12.6"
-  typed_data:
-    description: typed_data
-    source: hosted
-    version: "1.1.1"
+    version: "0.12.6+2"
   utf:
     description: utf
     source: hosted
@@ -183,7 +181,7 @@ packages:
   web_components:
     description: web_components
     source: hosted
-    version: "0.12.0+4"
+    version: "0.12.2"
   when:
     description: when
     source: hosted

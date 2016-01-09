@@ -1,5 +1,5 @@
 name: polymer_autonotify
-version: 1.0.0-rc.10
+version: 1.0.0-rc.10+1
 author: Vittorio Ballestra (Drafintech s.r.l.) <vittorio.ballestra@gmail.com>
 description: auto notify support for Polymer 1.0
 homepage : https://github.com/dam0vm3nt/polymer_autonotify
@@ -8,31 +8,19 @@ environment:
 
 dependencies:
  polymer: ">=1.0.0-rc.8"
- observe:
-  git:
-   ref: reflectable
-   url: https://github.com/dam0vm3nt/observe.git
- barback: any
+
+dev_dependencies:
+ autonotify_observe: "^1.0.0"
  test: any
- reflectable: ">=0.4.0 <0.6.0"
- web_components: ^0.12.0
 
 transformers:
-- web_components:
+- autonotify_observe:
    entry_points:
     - test/autonotify_test.html
 - test/pub_serve:
    $include: test/**_test{.*,}.dart
-- polymer_autonotify
-- observe:
-   files:
-    - test/autonotify_test.dart
-- reflectable:
-   entry_points:
-    - test/autonotify_test.dart
 
-
-
+# Comment befor publish
 #dependency_overrides:
-# observe:
-#  path: ../observe
+# autonotify_observe:
+#  path: ../autonotify_observe
