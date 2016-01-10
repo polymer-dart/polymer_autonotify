@@ -63,8 +63,8 @@ abstract class PropertyNotifier {
   static final Expando<PropertyNotifier> _notifiersCache = new Expando();
   static final Map _cycleDetection = {};
 
-  bool notifyPath(String name, var newValue);
-  notifySplice(String path, SplicesData spliceData);
+  void notifyPath(String name, var newValue);
+  void notifySplice(String path, SplicesData spliceData);
 
   PropertyNotifier() {}
 
@@ -172,7 +172,7 @@ abstract class HasParentMixin implements PropertyNotifier {
     refs.add(parent);
   }
 
-  bool notifyPath(String name, newValue) {
+  void notifyPath(String name, newValue) {
     parents.forEach((String parentName, List<PropertyNotifier> parents1) {
       parents1.forEach((PropertyNotifier parent) {
         parent.notifyPath(parentName + "." + name, newValue);
@@ -180,7 +180,7 @@ abstract class HasParentMixin implements PropertyNotifier {
     });
   }
 
-  notifySplice(String path, SplicesData spliceData) {
+  void notifySplice(String path, SplicesData spliceData) {
     parents.forEach((String parentName, List<PropertyNotifier> parents1) {
       parents1.forEach((PropertyNotifier parent) {
         parent.notifySplice(parentName + "." + path, spliceData);
@@ -320,10 +320,10 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
     if (!(element is Observable)) {
       throw "Using notifier on non observable Polymer";
     }
-    init(_element);
+    init(_element as Observable);
   }
 
-  bool notifyPath(String name, newValue) {
+  void notifyPath(String name, newValue) {
     //if (_logger.isLoggable(Level.FINE)) {
     //  _logger.fine("${_element} NOTIFY ${name} with ${newValue}");
     //}
@@ -336,10 +336,12 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
       });
     });
 
-    return _element.notifyPath(name, newValue);
+    if (_element is PolymerBase) {
+      (_element as PolymerBase).notifyPath(name, newValue);
+    }
   }
 
-  notifySplice(String path, SplicesData spliceData) {
+  void notifySplice(String path, SplicesData spliceData) {
     //_logger.fine("Notifiyng SPLICE ${spliceData.id} FOR ${_element.id}");
 
     parents.forEach((String parentName, List<PropertyNotifier> parents1) {

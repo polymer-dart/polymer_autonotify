@@ -9,6 +9,7 @@ import "package:observe/observe.dart";
 import "package:polymer_elements/paper_item.dart";
 import "package:polymer_elements/paper_input.dart";
 import "package:polymer_elements/paper_icon_button.dart";
+import "package:polymer_elements/paper_button.dart";
 import "package:polymer_elements/iron_icons.dart";
 
 import "dart:html";
@@ -38,6 +39,11 @@ class TestPolymerAutonotify extends PolymerElement with AutonotifyBehavior, Obse
   DomRepeatModel m = new DomRepeatModel.fromEvent(convertToJs(ev));
 
   items.remove(m["item"]);
+ }
+
+ @reflectable
+ void doShuffle([_,__]) {
+  items.shuffle();
  }
 
  TestPolymerAutonotify.created() : super.created();

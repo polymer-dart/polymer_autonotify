@@ -14,9 +14,11 @@ packages:
     source: hosted
     version: "1.5.0"
   autonotify_observe:
-    description: autonotify_observe
-    source: hosted
-    version: "1.0.0"
+    description:
+      path: "../../autonotify_observe"
+      relative: true
+    source: path
+    version: "1.0.0+2"
   barback:
     description: barback
     source: hosted

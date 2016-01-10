@@ -12,8 +12,8 @@ dependencies:
 dependency_overrides:
  polymer_autonotify:
   path: ..
-# autonotify_observe:
-#  path: ../../autonotify_observe
+ autonotify_observe:
+  path: ../../autonotify_observe
 
 
 transformers:
