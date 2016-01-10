@@ -453,8 +453,11 @@ class ListPropertyNotifier extends PropertyNotifier
           new ChangeVersion(_target).version++;
 
           // Adjust references
+          //print("lc:${lc}, added:${_target.sublist(lc.index,lc.index+lc.addedCount)}");
 
           int adjust = lc.addedCount - lc.removed.length;
+
+          int l = subNodes.length;
 
           // Fix observers
           if (lc.removed != null && lc.removed.length > 0) {
@@ -463,30 +466,32 @@ class ListPropertyNotifier extends PropertyNotifier
               subNodes.remove(name).removeReference(name, this);
             }
 
-            // fix path on the rest (use subnodes length because it is the actual remainng
-            if (adjust < 0) {
-              for (int i = lc.index; i < subNodes.length; i++) {
-                String fromName = (i - adjust).toString();
-                String toName = i.toString();
+          }
 
-                subNodes[toName] = subNodes.remove(fromName)
-                  ..renameReference(fromName, toName, this);
-              }
+          // fix path on the rest (use subnodes length because it is the actual remainng
+          if (adjust < 0) {
+            for (int i = lc.index+lc.removed.length; i < l; i++) {
+              String fromName = i.toString();
+              String toName = (i+adjust).toString();
+
+              subNodes[toName] = subNodes.remove(fromName)
+                ..renameReference(fromName, toName, this);
+            }
+          } else if (adjust > 0) {
+            for (int i = l - 1; i >= lc.index+lc.removed.length; i--) {
+              String fromName = i.toString();
+              String toName = (i + adjust).toString();
+
+              subNodes[toName] = subNodes.remove(fromName)
+                ..renameReference(fromName, toName, this);
             }
           }
+
           if (lc.addedCount > 0) {
             // Fix path on tail
             // NOTE : use subnodes length because that was the length when the change occurred
             // This is relevant when more than one change ad a time are given
-            if (adjust > 0) {
-              for (int i = subNodes.length - 1; i >= lc.index; i--) {
-                String fromName = i.toString();
-                String toName = (i + adjust).toString();
 
-                subNodes[toName] = subNodes.remove(fromName)
-                  ..renameReference(fromName, toName, this);
-              }
-            }
 
             // Add new observers
             for (int i = lc.index; i < lc.addedCount + lc.index; i++) {
