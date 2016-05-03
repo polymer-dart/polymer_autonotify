@@ -337,7 +337,11 @@ class PolymerElementPropertyNotifier extends PropertyNotifier
     });
 
     if (_element is PolymerBase) {
-      (_element as PolymerBase).notifyPath(name, newValue);
+      try {
+        (_element as PolymerBase).notifyPath(name, newValue);
+      } catch(error){
+        _logger.severe("Could not notify '${name}' for '${_element} because of :${error}",error);
+      }
     }
   }
 

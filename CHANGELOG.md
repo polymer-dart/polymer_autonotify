@@ -1,3 +1,8 @@
+## 1.0.0+1
+
+More robust notify: will not break your app if something goes wrong while notifying a property (i.e. there's some problem
+with side effects caused by the propery change).
+
 ## 1.0.0-rc.10
 
 Updated to support `polymer-1.0.0-rc.10`. Just check out [this](https://github.com/dart-lang/polymer-dart/issues/665).
