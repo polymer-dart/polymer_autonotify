@@ -191,7 +191,7 @@ void _transformClass(ClassDeclaration cls, TextEditTransaction code,
     for (var type in cls.withClause.mixinTypes) {
       var id = _getSimpleIdentifier(type.name);
       if (id.name == 'Observable') {
-        if (_getSimpleIdentifier(cls.extendsClause.superclass.name)!='PolymerElement') {
+        if (_getSimpleIdentifier(cls.extendsClause.superclass.name)?.name!='PolymerElement') {
           code.edit(id.offset, id.offset, '/*Z*/ JsProxy,');
         }
       } else if (id.name == 'ChangeNotifier') {

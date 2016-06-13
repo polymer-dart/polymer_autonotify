@@ -1,3 +1,7 @@
+## 1.0.0+2
+
+Fixes https://github.com/dam0vm3nt/autonotify_observe/issues/1
+
 ## 1.0.0+1
 
 More robust notify: will not break your app if something goes wrong while notifying a property (i.e. there's some problem
